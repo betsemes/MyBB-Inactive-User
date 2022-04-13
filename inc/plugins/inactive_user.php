@@ -64,9 +64,11 @@ function inactive_user_install()
 		}
 	}
 
-  //TODO: Create the "inactive" usergroup. Do nothing if it already exists.
+  //TODO: Create the "inactive" usergroup (to be called "inactive_user_plugin" maybe). Do nothing if it already exists.
+  //global $config;
+  //$inactive_usergroup = $config['database']['table_prefix']. "inactive_user_plugin";
   //if the inactive usergroup does not exist...
-  //append the inactive and self-banned inactive usergroups to the database.
+  //append the inactive and self-banned(to be called "self_banned_user_plugin" maybe) inactive usergroups to the database.
   //use the alternative to $db->insert_query_multiple() method which inserts one record.
   //update the cache
   
