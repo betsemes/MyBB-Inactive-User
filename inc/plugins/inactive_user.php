@@ -6,6 +6,7 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
+//TODO: Create an object to hold the inactive users data
 
 function inactive_user_info()
 {
@@ -25,13 +26,43 @@ function inactive_user_install()
 {
 	global $db;
   
-  //TODO: create the settings table
-
 	// Create our table collation
 	$collation = $db->build_create_table_collation(); // what is a "table collation"?
 
-	// Create table if it doesn't exist already
-	if(!$db->table_exists('inactive_users'))
+  // Create settings table if it doesn't exist already
+	if (!$db->table_exists('inactive_user_settings'))
+	{
+		switch($db->type)
+		{
+    // only the "default" section is done
+			case "pgsql": 
+      	$db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
+					mid serial,
+					message varchar(100) NOT NULL default '',
+					PRIMARY KEY (mid)
+				);");
+				break;
+			case "sqlite":
+				$db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
+					mid INTEGER PRIMARY KEY,
+					message varchar(100) NOT NULL default ''
+				);");
+				break;
+			default:
+    		$db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
+          isid int unsigned NOT NULL,
+          setting varchar(50),
+          value varchar(250),
+          PRIMARY KEY (isid)
+				) ENGINE=MyISAM{$collation};");
+				break;
+		}
+	}
+  
+  //TODO: populate the settings table with default values
+
+  // Create table if it doesn't exist already
+	if (!$db->table_exists('inactive_users'))
 	{
 		switch($db->type)
 		{
@@ -57,6 +88,7 @@ function inactive_user_install()
           oldgroup smallint NOT NULL,
           olddisplaygroup smallint NOT NULL,
           oldadditionalgroups varchar(200) NOT NULL,
+          usertitle varchar(250),
           returndate int NOT NULL,
           UNIQUE KEY (uid)
 				) ENGINE=MyISAM{$collation};");
@@ -87,7 +119,8 @@ function inactive_user_install()
       2 as deactmethod,
       usergroup as oldgroup,
       displaygroup as olddisplaygroup,
-      additionalgroups as oldadditionalgroups,"
+      additionalgroups as oldadditionalgroups,
+      usertitle as usertitle,"
       .TIME_NOW. " + (60 * 60 * 24 * 365 * 2) as returndate
     from
       ai_users
@@ -136,6 +169,7 @@ function inactive_user_uninstall()
 
   //TODO: restore original usergroups to each inactive user
   
+  $db->drop_table('inactive_user_settings');
   $db->drop_table('inactive_users');
   
   //TODO: drop the settings table
