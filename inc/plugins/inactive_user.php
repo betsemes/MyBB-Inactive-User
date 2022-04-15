@@ -30,6 +30,7 @@ function inactive_user_install()
 	$collation = $db->build_create_table_collation(); // what is a "table collation"?
   
   //TODO: there is a MyBB settings table that the plugins I have installed use to store their own settings. May need to figure out whether or not to create a settings table or to use MyBB one.
+  //JonesCore may have something to aid me on this, although I suspect lack of documentation will make life harder actually.
 
   // Create settings table if it doesn't exist already
 	if (!$db->table_exists('inactive_user_settings'))
