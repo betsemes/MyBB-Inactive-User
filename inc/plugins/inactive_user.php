@@ -49,7 +49,7 @@ function inactive_user_info()
 
 function inactive_user_install()
 {
-	global $db, $inactive_user_settings, $iu_settings;
+	global $db, $cache, $inactive_user_settings, $iu_settings;
   
 	// Create our table collation
 	$collation = $db->build_create_table_collation(); // what is a "table collation"?
@@ -98,7 +98,7 @@ function inactive_user_install()
     $iu_settings = array_column($inactive_user_settings, "value", "setting");
   }
   
-  // Create table if it doesn't exist already
+  // Create inactive users table if it doesn't exist already
 	if (!$db->table_exists('inactive_users'))
 	{
 		switch($db->type)
@@ -138,8 +138,18 @@ function inactive_user_install()
   //$self_banned_usergroup = TABLE_PREFIX. "self_banned_user_plugin";
   //if the inactive usergroup does not exist... 
   //append the inactive and self-banned(to be called "self_banned_user_plugin" maybe) inactive usergroups to the database.
-  
-  // $max_gid = $db -> write_query('select max(gid) as gid from ai_usergroups');
+
+//  ********finally, after much frustration, this seems to work:
+        // var_dump($db->simple_select("usergroups", "max(gid)"));
+// This worked as well:
+        // var_dump($db->write_query("select gid from ai_usergroups;"));
+// ...and this worked as well.
+        // var_dump($db->write_query("select max(gid) as gid from ai_usergroups;"));
+// The problem seems to have been caused by having deleted two records from the usergroups table on LibreOffice Base without having rebuilt the cache.
+
+  // echo "getting the max group id";
+  // $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ai_usergroups;'), MYSQLI_ASSOC);
+  // echo $max_gid
   // $inactive_usergroups = array(
     // array(
       // "gid" => $max_gid[0]['gid'] + 1,
@@ -328,8 +338,10 @@ function inactive_user_install()
     // )
   // );
   
-  //use $db->insert_query_multiple() method.
-  //update the cache
+  // add the usergroups to the usergroups table
+  // $db->insert_query_multiple("usergroups", $inactive_usergroups);
+  // update the cache
+  // $cache->update_usergoups();
   
   //if the inactive usergroup does exist... what to do?
   
