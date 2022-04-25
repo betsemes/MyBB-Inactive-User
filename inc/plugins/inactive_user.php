@@ -137,6 +137,7 @@ function inactive_user_install()
   
     // append default settings to the settings table
     $db->insert_query_multiple("inactive_user_settings", $inactive_user_settings->$settings);
+    $db->error();
 
 	}
   else //if the settings table does exist, load settings from it
