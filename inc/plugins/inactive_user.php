@@ -10,6 +10,8 @@ if(!defined("IN_MYBB"))
 class InactiveUserSettings
 {
 //DONE: Create an object to hold the settings data
+//TODO: Move the usergroup calculation logic into this class. --in progress
+//TODO: Make an accessor to read the usergroup's gid numbers. --in progress
   
   //Define the default settings for the plugin
       // Settings: 
@@ -25,47 +27,60 @@ class InactiveUserSettings
           // whether or not to include unverified accounts in the inactivity identification process, default: false
       // includeawayusers
           // include users that have set their status to away, default: true 
-  public static $settings = array(
+  public $settings = array(
     array("isid" => 1, "setting" => "inactivityinterval", "value" => "90"),
     array("isid" => 2, "setting" => "deletiontime", "value" => "730"),
     array("isid" => 3, "setting" => "reminders", "value" => "90"),
     array("isid" => 4, "setting" => "reminderspacing", "value" => "24"),
     array("isid" => 5, "setting" => "includenonverifiedaccounts", "value" => "0"),
-    array("isid" => 6, "setting" => "includeawayusers", "value" => "1")
+    array("isid" => 6, "setting" => "includeawayusers", "value" => "1"),
+    array("isid" => 7, "setting" => "inactiveusergroup", "value" => "0"),
+    array("isid" => 8, "setting" => "selfbanusergroup", "value" => "0")
   );
   
-  public static function settings()
+  public function __construct() 
   {
-    return array_column(self::$settings, "value", "setting");
+    global $db;
+    
+    // echo "getting the max group id";
+    $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ' .TABLE_PREFIX. 'usergroups;'), MYSQLI_ASSOC);  
+    $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
+    $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
+  }
+  
+  public function settings()
+  {
+    return array_column($this->$settings, "value", "setting");
   }
 
-  public static function get($setting)
+  public function get($setting)
   {
-    $S = self::settings();
+    $S = $this->settings();
     return $S[$setting];
   }
   
-  public static function set($setting, $value)
+  public function set($setting, $value)
   {
-    foreach (self::$settings[0] as $key => $sss)
+    foreach ($this->$settings[0] as $key => $sss)
     {
       if($key === $setting)
       {
-        self::$settings[0][$key] = $value;
+        $this->$settings[0][$key] = $value;
         return true;
       }
     }
     return false;
   }
   
-  public static function load()
+  public function load()
   {
-    self::$settings = mysqli_fetch_all($db->write_query(
+    $this->$settings = mysqli_fetch_all($db->write_query(
     "select * from ".TABLE_PREFIX."inactive_user_settings;"
     ), MYSQLI_ASSOC);
   }
 }
-   
+$inactive_user_settings = new InactiveUserSettings();
+
 function inactive_user_info()
 {
 	return array(
@@ -74,7 +89,7 @@ function inactive_user_info()
 		"website"       => "/index.html",
 		"author"        => "Betsemes",
 		"authorsite"    => "mailto:betsemes@gmail.com",
-		"version"       => "0.0.1a",
+		"version"       => "0.0.0a",
 		"codename"      => "inactive_user",
 		"compatibility" => "1830"
 	);
@@ -82,7 +97,7 @@ function inactive_user_info()
 
 function inactive_user_install()
 {
-	global $db, $cache;
+	global $db, $cache, $inactive_user_settings;
   
 	// Create our table collation
 	$collation = $db->build_create_table_collation(); // what is a "table collation"?
@@ -121,12 +136,12 @@ function inactive_user_install()
 		}
   
     // append default settings to the settings table
-    $db->insert_query_multiple("inactive_user_settings", InactiveUserSettings::$settings);
+    $db->insert_query_multiple("inactive_user_settings", $inactive_user_settings->$settings);
 
 	}
   else //if the settings table does exist, load settings from it
   {
-    InactiveUserSettings::load();
+    $inactive_user_settings->load();
   }
   
   // Create inactive users table if it doesn't exist already
@@ -168,12 +183,9 @@ function inactive_user_install()
   //if the inactive usergroup does not exist... 
   //append the inactive and self-banned(to be called "self_banned_user_plugin" maybe) inactive usergroups to the database.
 
-  // echo "getting the max group id";
-  $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ai_usergroups;'), MYSQLI_ASSOC);
-
   $inactive_usergroups = array(
     array(
-      "gid" => (int)$max_gid[0]['gid'] + 1,
+      "gid" => (int)$inactive_user_settings->get("inactiveusergroup"),
       "type" => 2,
       "title" => TABLE_PREFIX. "inactive_user_plugin",
       "description" => "Inactive User",
@@ -265,7 +277,7 @@ function inactive_user_install()
       "canviewwarnlogs" => 0,
       "canuseipsearch" => 0
     ), array(
-      "gid" => (int)$max_gid[0]['gid'] + 2,
+      "gid" => (int)$inactive_user_settings->get("selfbanusergroup"),
       "type" => 2,
       "title" => TABLE_PREFIX. "self_banned_user_plugin",
       "description" => "Self-Banned User",
@@ -364,7 +376,7 @@ function inactive_user_install()
   // update the cache
   $cache->update_usergroups();
   
-  //TODO: add two new settings to the settings table; for both new usergroups
+  //TODO: add two new settings to the settings table; for both new usergroups --in progress
   //TODO: add code to delete the groups recorded in the settings table
   
   //if the inactive usergroup does exist... what to do?
@@ -384,13 +396,12 @@ function inactive_user_install()
       displaygroup as olddisplaygroup,
       additionalgroups as oldadditionalgroups,
       usertitle as usertitle,"
-      .TIME_NOW. " + (60 * 60 * 24 * " .InactiveUserSettings::get("deletiontime"). ") as returndate
-    from
-      ai_users
+      .TIME_NOW. " + (60 * 60 * 24 * " .$inactive_user_settings->get("deletiontime"). ") as returndate
+    from " .TABLE_PREFIX. "users
     where
       (if(lastactive > lastvisit, lastactive, lastvisit) 
-        < ".TIME_NOW." - (60 * 60 * 24 * " .InactiveUserSettings::get("inactivityinterval"). "))
-      and (uid not in (select uid from ai_inactive_users));"
+        < ".TIME_NOW." - (60 * 60 * 24 * " .$inactive_user_settings->get("inactivityinterval"). "))
+      and (uid not in (select uid from " .TABLE_PREFIX. "inactive_users));"
     ), MYSQLI_ASSOC);
     
     // Set the fields to the appropriate data types
