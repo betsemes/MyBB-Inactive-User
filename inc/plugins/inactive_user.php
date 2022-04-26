@@ -10,9 +10,6 @@ if(!defined("IN_MYBB"))
 class inactiveUserSettings
 {
 //DONE: Create an object to hold the settings data
-//TODO: Move the usergroup calculation logic into this class. --in progress
-//TODO: Make an accessor to read the usergroup's gid numbers. --in progress
-  
   //Define the default settings for the plugin
       // Settings: 
       // inactivityinterval
@@ -386,7 +383,6 @@ function inactive_user_install()
   // update the cache
   $cache->update_usergroups();
   
-  //TODO: add two new settings to the settings table; for both new usergroups --in progress
   //TODO: add code to delete the groups recorded in the settings table
   
   //if the inactive usergroup does exist... what to do?
@@ -451,7 +447,7 @@ function inactive_user_uninstall()
 
   // $db->delete_query ("inactive_users", "deactdate > 0");
 
-  //TODO: restore original usergroups to each inactive user
+  //TODO: uninstall: restore original usergroups to each inactive user
   
   $db->drop_table('inactive_user_settings');
   $db->drop_table('inactive_users');
