@@ -79,6 +79,29 @@ class inactiveUserSettings
     "select * from ".TABLE_PREFIX."inactive_user_settings;"
     ), MYSQLI_ASSOC);
   }
+
+  public function delete_usergroups()
+  {
+    global $db, $cache;
+    //add the delete query to delete the inactive usergroups from MyBB usergroups table.
+    /*$db->delete_query
+
+    Used to perform a delete query on a table in a database. Receives three parameters:
+
+    table
+        The name of the table.
+    where
+        The where clause.
+    limit
+    The maximum amount of rows to be deleted. Default is unlimited. 
+    
+    Example:
+    $db->delete_query("awaitingactivation", "uid='".(int)$user['uid']."' AND code='".$db->escape_string($mybb->input['token'])."' AND type='l'");
+
+    */
+    $db->delete_query("usergroups", "gid in (18,19)");
+    $cache->update_usergroups();
+  }
 }
 $inactive_user_settings = new inactiveUserSettings();
 
@@ -443,10 +466,14 @@ function inactive_user_is_installed()
 
 function inactive_user_uninstall()
 {
-  global $db;
+  global $db, $cache;
 
   // $db->delete_query ("inactive_users", "deactdate > 0");
 
+  //TODO: replace the delete query below with the delete_usergroups method.
+  // $inactive_user_settings->delete_usergroups();
+  $db->delete_query("usergroups", "gid in (18,19)");
+  $cache->update_usergroups();
   //TODO: uninstall: restore original usergroups to each inactive user
   
   $db->drop_table('inactive_user_settings');
