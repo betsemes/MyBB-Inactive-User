@@ -7,7 +7,7 @@ if(!defined("IN_MYBB"))
 
 //TODO: Create an object to hold the inactive users data
 
-class InactiveUserSettings
+class inactiveUserSettings
 {
 //DONE: Create an object to hold the settings data
 //TODO: Move the usergroup calculation logic into this class. --in progress
@@ -27,25 +27,29 @@ class InactiveUserSettings
           // whether or not to include unverified accounts in the inactivity identification process, default: false
       // includeawayusers
           // include users that have set their status to away, default: true 
-  public $settings = array(
-    array("isid" => 1, "setting" => "inactivityinterval", "value" => "90"),
-    array("isid" => 2, "setting" => "deletiontime", "value" => "730"),
-    array("isid" => 3, "setting" => "reminders", "value" => "90"),
-    array("isid" => 4, "setting" => "reminderspacing", "value" => "24"),
-    array("isid" => 5, "setting" => "includenonverifiedaccounts", "value" => "0"),
-    array("isid" => 6, "setting" => "includeawayusers", "value" => "1"),
-    array("isid" => 7, "setting" => "inactiveusergroup", "value" => "0"),
-    array("isid" => 8, "setting" => "selfbanusergroup", "value" => "0")
-  );
+  public $settings;
   
   public function __construct() 
   {
     global $db;
     
     // echo "getting the max group id";
+    $this->$settings = array(
+      array("isid" => 1, "setting" => "inactivityinterval", "value" => "90"),
+      array("isid" => 2, "setting" => "deletiontime", "value" => "730"),
+      array("isid" => 3, "setting" => "reminders", "value" => "90"),
+      array("isid" => 4, "setting" => "reminderspacing", "value" => "24"),
+      array("isid" => 5, "setting" => "includenonverifiedaccounts", "value" => "0"),
+      array("isid" => 6, "setting" => "includeawayusers", "value" => "1"),
+      array("isid" => 7, "setting" => "inactiveusergroup", "value" => "0"),
+      array("isid" => 8, "setting" => "selfbanusergroup", "value" => "0")
+    );
+    
     $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ' .TABLE_PREFIX. 'usergroups;'), MYSQLI_ASSOC);  
     $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
     $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
+    // var_dump($this->$settings);
+
   }
   
   public function settings()
@@ -61,11 +65,11 @@ class InactiveUserSettings
   
   public function set($setting, $value)
   {
-    foreach ($this->$settings[0] as $key => $sss)
+    for ($i = 0; $i <= sizeof($this->$settings); $i++)
     {
-      if($key === $setting)
+      if($this->$settings[$i]["setting"] === $setting)
       {
-        $this->$settings[0][$key] = $value;
+        $this->$settings[$i]["value"] = (string)$value;
         return true;
       }
     }
@@ -79,7 +83,7 @@ class InactiveUserSettings
     ), MYSQLI_ASSOC);
   }
 }
-$inactive_user_settings = new InactiveUserSettings();
+$inactive_user_settings = new inactiveUserSettings();
 
 function inactive_user_info()
 {
@@ -137,7 +141,6 @@ function inactive_user_install()
   
     // append default settings to the settings table
     $db->insert_query_multiple("inactive_user_settings", $inactive_user_settings->$settings);
-    $db->error();
 
 	}
   else //if the settings table does exist, load settings from it
@@ -145,6 +148,7 @@ function inactive_user_install()
     $inactive_user_settings->load();
   }
   
+  echo "entering inactive users table creation\n";
   // Create inactive users table if it doesn't exist already
 	if (!$db->table_exists('inactive_users'))
 	{
@@ -179,18 +183,22 @@ function inactive_user_install()
 				break;
 		}
 	}
+  echo "exiting inactive users table creation\n";
 
   //Create the "inactive" usergroup. Do nothing if it already exists.
   //if the inactive usergroup does not exist... 
   //append the inactive and self-banned(to be called "self_banned_user_plugin" maybe) inactive usergroups to the database.
 
+  var_dump($inactive_user_settings->get("inactiveusergroup"));
+  echo "\n";
+  var_dump($inactive_user_settings->get("selfbanusergroup"));
   $inactive_usergroups = array(
     array(
       "gid" => (int)$inactive_user_settings->get("inactiveusergroup"),
       "type" => 2,
       "title" => TABLE_PREFIX. "inactive_user_plugin",
       "description" => "Inactive User",
-      "namestyle" => '<span style="color:#8c8c8c,">{username}</span>',
+      "namestyle" => '<span style="color:#8c8c8c;">{username}</span>',
       "usertitle" => "Inactive",
       "stars" => 0,
       "starimage" => "images/star.png",
@@ -373,6 +381,7 @@ function inactive_user_install()
   );
   
   // add the usergroups to the usergroups table
+  echo "inserting inactive_usergroups\n";
   $db->insert_query_multiple("usergroups", $inactive_usergroups);
   // update the cache
   $cache->update_usergroups();
