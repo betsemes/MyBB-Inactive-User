@@ -26,9 +26,13 @@ class inactiveUserSettings
           // include users that have set their status to away, default: true 
   public $settings;
   
-  public function __construct() 
+  // private $dbase;
+  
+  public function __construct()//$db) 
   {
     global $db;
+    
+    // $this->$dbase = $db;
     
     // echo "getting the max group id";
     $this->$settings = array(
@@ -46,7 +50,11 @@ class inactiveUserSettings
     $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
     $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
     // var_dump($this->$settings);
-
+    
+    if ($db->table_exists('inactive_user_settings'))
+    {
+      $this->load();
+    }
   }
   
   public function settings()
@@ -75,6 +83,8 @@ class inactiveUserSettings
   
   public function load()
   {
+    global $db;
+    
     $this->$settings = mysqli_fetch_all($db->write_query(
     "select * from ".TABLE_PREFIX."inactive_user_settings;"
     ), MYSQLI_ASSOC);
@@ -103,7 +113,7 @@ class inactiveUserSettings
     $cache->update_usergroups();
   }
 }
-$inactive_user_settings = new inactiveUserSettings();
+$inactive_user_settings = new inactiveUserSettings($db);
 
 function inactive_user_info()
 {
@@ -467,12 +477,12 @@ function inactive_user_is_installed()
 function inactive_user_uninstall()
 {
   global $db, $cache;
-
-  // $db->delete_query ("inactive_users", "deactdate > 0");
-
+  
+  $inactive_user_settings = new inactiveUserSettings($db);
+  
   //TODO: replace the delete query below with the delete_usergroups method.
   // $inactive_user_settings->delete_usergroups();
-  $db->delete_query("usergroups", "gid in (18,19)");
+  $db->delete_query("usergroups", "gid in (" .$inactive_user_settings->get('inactiveusergroup'). "," .$inactive_user_settings->get('selfbanusergroup'). ")");
   $cache->update_usergroups();
   //TODO: uninstall: restore original usergroups to each inactive user
   
