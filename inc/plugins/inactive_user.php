@@ -32,29 +32,29 @@ class inactiveUserSettings
   {
     global $db;
     
-    // $this->$dbase = $db;
-    
-    // echo "getting the max group id";
-    $this->$settings = array(
-      array("isid" => 1, "setting" => "inactivityinterval", "value" => "90"),
-      array("isid" => 2, "setting" => "deletiontime", "value" => "730"),
-      array("isid" => 3, "setting" => "reminders", "value" => "90"),
-      array("isid" => 4, "setting" => "reminderspacing", "value" => "24"),
-      array("isid" => 5, "setting" => "includenonverifiedaccounts", "value" => "0"),
-      array("isid" => 6, "setting" => "includeawayusers", "value" => "1"),
-      array("isid" => 7, "setting" => "inactiveusergroup", "value" => "0"),
-      array("isid" => 8, "setting" => "selfbanusergroup", "value" => "0")
-    );
-    
-    $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ' .TABLE_PREFIX. 'usergroups;'), MYSQLI_ASSOC);  
-    $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
-    $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
-    // var_dump($this->$settings);
-    
     if ($db->table_exists('inactive_user_settings'))
     {
       $this->load();
     }
+    else
+    {
+      // getting the max group id
+      $this->$settings = array(
+        array("isid" => 1, "setting" => "inactivityinterval", "value" => "90"),
+        array("isid" => 2, "setting" => "deletiontime", "value" => "730"),
+        array("isid" => 3, "setting" => "reminders", "value" => "90"),
+        array("isid" => 4, "setting" => "reminderspacing", "value" => "24"),
+        array("isid" => 5, "setting" => "includenonverifiedaccounts", "value" => "0"),
+        array("isid" => 6, "setting" => "includeawayusers", "value" => "1"),
+        array("isid" => 7, "setting" => "inactiveusergroup", "value" => "0"),
+        array("isid" => 8, "setting" => "selfbanusergroup", "value" => "0")
+      );
+      
+      $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ' .TABLE_PREFIX. 'usergroups;'), MYSQLI_ASSOC);  
+      $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
+      $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
+    }
+    
   }
   
   public function settings()
