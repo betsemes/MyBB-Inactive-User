@@ -32,6 +32,9 @@ class inactiveUserSettings
   {
     global $db;
     
+    // Create our table collation
+    $collation = $db->build_create_table_collation(); // what is a "table collation"?
+    
     if ($db->table_exists('inactive_user_settings'))
     {
       $this->load();
@@ -53,6 +56,35 @@ class inactiveUserSettings
       $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ' .TABLE_PREFIX. 'usergroups;'), MYSQLI_ASSOC);  
       $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
       $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
+      
+      switch($db->type)
+      {
+      // only the "default" section is done
+        case "pgsql": 
+          $db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
+            mid serial,
+            message varchar(100) NOT NULL default '',
+            PRIMARY KEY (mid)
+          );");
+          break;
+        case "sqlite":
+          $db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
+            mid INTEGER PRIMARY KEY,
+            message varchar(100) NOT NULL default ''
+          );");
+          break;
+        default:
+          $db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
+            isid int unsigned NOT NULL,
+            setting varchar(50),
+            value varchar(250),
+            PRIMARY KEY (isid)
+          ) ENGINE=MyISAM{$collation};");
+          break;
+      }
+  
+    // append default settings to the settings table
+    $db->insert_query_multiple("inactive_user_settings", $this->$settings);
     }
     
   }
@@ -113,7 +145,6 @@ class inactiveUserSettings
     $cache->update_usergroups();
   }
 }
-$inactive_user_settings = new inactiveUserSettings($db);
 
 function inactive_user_info()
 {
@@ -131,7 +162,7 @@ function inactive_user_info()
 
 function inactive_user_install()
 {
-	global $db, $cache, $inactive_user_settings;
+	global $db, $cache;
   
 	// Create our table collation
 	$collation = $db->build_create_table_collation(); // what is a "table collation"?
@@ -141,43 +172,9 @@ function inactive_user_install()
 
   //TODO: move creating/loading the settings table to the settings class
   // Create settings table if it doesn't exist already
-	if (!$db->table_exists('inactive_user_settings'))
-	{
-		switch($db->type)
-		{
-    // only the "default" section is done
-			case "pgsql": 
-      	$db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
-					mid serial,
-					message varchar(100) NOT NULL default '',
-					PRIMARY KEY (mid)
-				);");
-				break;
-			case "sqlite":
-				$db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
-					mid INTEGER PRIMARY KEY,
-					message varchar(100) NOT NULL default ''
-				);");
-				break;
-			default:
-    		$db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
-          isid int unsigned NOT NULL,
-          setting varchar(50),
-          value varchar(250),
-          PRIMARY KEY (isid)
-				) ENGINE=MyISAM{$collation};");
-				break;
-		}
-  
-    // append default settings to the settings table
-    $db->insert_query_multiple("inactive_user_settings", $inactive_user_settings->$settings);
-
-	}
-  else //if the settings table does exist, load settings from it
-  {
-    $inactive_user_settings->load();
-  }
-  
+	
+  $inactive_user_settings = new inactiveUserSettings();
+	
   echo "entering inactive users table creation\n";
   // Create inactive users table if it doesn't exist already
 	if (!$db->table_exists('inactive_users'))
