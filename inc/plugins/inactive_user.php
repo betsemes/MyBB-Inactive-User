@@ -28,7 +28,7 @@ class inactiveUserSettings
   
   public function __construct() 
   {
-    //TODO: global $db; --didn't work. Try adding it and $cache on the constructor's parameters.
+    global $db;
     
     // echo "getting the max group id";
     $this->$settings = array(
@@ -126,11 +126,10 @@ function inactive_user_install()
 	// Create our table collation
 	$collation = $db->build_create_table_collation(); // what is a "table collation"?
   
-  //TODO: --low priority. there is a MyBB settings table that the plugins I have installed use to store their own settings. May need to figure out whether or not to use it.
+  //TODO: there is a MyBB settings table that the plugins I have installed use to store their own settings. May need to figure out whether or not to use it.
   //JonesCore may have something to aid me on this, although I suspect lack of documentation will make it harder actually.
 
   //TODO: move creating/loading the settings table to the settings class
-  
   // Create settings table if it doesn't exist already
 	if (!$db->table_exists('inactive_user_settings'))
 	{
@@ -407,6 +406,8 @@ function inactive_user_install()
   // update the cache
   $cache->update_usergroups();
   
+  //TODO: add code to delete the groups recorded in the settings table
+  
   //if the inactive usergroup does exist... what to do?
   
   // Begin of .inc/tasks/inactive_user.php
@@ -469,9 +470,7 @@ function inactive_user_uninstall()
 
   // $db->delete_query ("inactive_users", "deactdate > 0");
 
-  //TODO: generalize usergroups deletion query
   //TODO: replace the delete query below with the delete_usergroups method.
-  
   // $inactive_user_settings->delete_usergroups();
   $db->delete_query("usergroups", "gid in (18,19)");
   $cache->update_usergroups();
