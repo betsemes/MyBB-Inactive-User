@@ -6,10 +6,10 @@ if(!defined("IN_MYBB"))
 }
 
 //TODO: Create an object to hold the inactive users data
-
+//TODO: move the inactiveUserSettings class to its own file.
+// Have a "require_once" in its place.
 class inactiveUserSettings
 {
-//DONE: Create an object to hold the settings data
   //Define the default settings for the plugin
       // Settings: 
       // inactivityinterval
@@ -96,12 +96,13 @@ class inactiveUserSettings
 
   public function get($setting)
   {
-    $S = $this->settings();
+    $S = $this->settings(); //TODO: replace this with getting it from the database
     return $S[$setting];
   }
   
   public function set($setting, $value)
   {
+    //TODO: add code to update the database before doing this.
     for ($i = 0; $i <= sizeof($this->$settings); $i++)
     {
       if($this->$settings[$i]["setting"] === $setting)
@@ -170,13 +171,14 @@ function inactive_user_install()
   //TODO: there is a MyBB settings table that the plugins I have installed use to store their own settings. May need to figure out whether or not to use it.
   //JonesCore may have something to aid me on this, although I suspect lack of documentation will make it harder actually.
 
-  //TODO: move creating/loading the settings table to the settings class
   // Create settings table if it doesn't exist already
 	
   $inactive_user_settings = new inactiveUserSettings();
 	
   echo "entering inactive users table creation\n";
-  // Create inactive users table if it doesn't exist already
+  
+ //TODO: move this section to the inactive users class
+ // Create inactive users table if it doesn't exist already
 	if (!$db->table_exists('inactive_users'))
 	{
 		switch($db->type)
@@ -417,6 +419,7 @@ function inactive_user_install()
   
   //if the inactive usergroup does exist... what to do?
   
+  //TODO: move inactive users identification code to its own file.
   // Begin of .inc/tasks/inactive_user.php
   // This portion will identify inactive users. Require it once here.
   
@@ -490,10 +493,12 @@ function inactive_user_uninstall()
 
 function inactive_user_activate()
 {
-
+  //TODO: mark each user in the inactive user table with the inactive usergroup.
+  // schedule the inactive user identification script.
 }
 
 function inactive_user_deactivate()
 {
-
+  //TODO: restore the original usergroups to users.
+  // unschedule the inactive user identification script.
 }
