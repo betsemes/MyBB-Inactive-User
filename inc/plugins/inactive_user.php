@@ -90,12 +90,15 @@ function inactive_user_uninstall()
   // Delete the inactive usergroups.
   $iu_settings->delete_usergroups();
   
-  // Delete the settings
-  $iu_settings->delete_settings();
-  
   // Drop the tables.
   // $db->drop_table('inactive_user_settings');
-  $db->drop_table('inactive_users');
+  if (!$iu_settings->get('keeptables'))
+  {
+    $db->drop_table('inactive_users');
+  }
+  
+  // Delete the settings
+  $iu_settings->delete_settings();
   
   $PL->edit_core (
       "inactive_user", 

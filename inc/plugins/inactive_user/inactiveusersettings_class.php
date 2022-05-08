@@ -107,18 +107,6 @@ class inactiveUserSettings
                     'optionscode' => 'yesno',
                     'value' => 1,
                     ),
-          'inactiveusergroup' => array(
-                    'title' => 'Inactive Usergroup',
-                    'description' => 'Do NOT modify.',
-                    'optionscode' => "numeric\nmin=0",
-                    'value' => 0,
-                    ),
-          'selfbanusergroup' => array(
-                    'title' => 'Self-Ban Usergroup',
-                    'description' => 'Do NOT modify.',
-                    'optionscode' => "numeric\nmin=0",
-                    'value' => 0,
-                    ),
           'keeptables' => array(
                     'title' => 'Keep Inactive Users Data',
                     'description' => 'Keep inactive users data after uninstall.',
