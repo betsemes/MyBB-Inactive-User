@@ -10,10 +10,10 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
  */
 
-//TODO: use PluginLibrary to make any change on this class. 
-// It's possible that I'll drop the use of a settings table and adopt the way PluginLibrary does things.
+/* ./inc/plugins/inactive_user/inactiveusersettings_class.php
+   File containing the class for interfacing with the plugin settings. */
 
-//TODO: Add a "keeptables" setting to prevent table drop on uninstall.
+//TODO: Rewrite the functions that still use the old approach by using PluginLibrary. Read directly from the database.
 
 /**
  * Manages the settings table.
@@ -54,7 +54,6 @@ class inactiveUserSettings
     global $db, $PL;
     $PL or require_once PLUGINLIBRARY;
     
-    //TODO: IN PROGRESS Changing settings functionality from having a settings table.
     // Need to store the settings in MyBB settings table so that they can be accessed and modified through the settings control panel.
     
     // Check if PluginLibrary is the required version.
@@ -64,122 +63,71 @@ class inactiveUserSettings
       admin_redirect("index.php?module=config-plugins");
     }
     
-    // TESTING: Code to create the settings in MyBB settings table.
-    $PL->settings(
-      'inactive_user',
-      'Inactive User Settings',
-      'Modify the way inactive users are handled.',
-      array(
-        'inactivityinterval' => array(
-                  'title' => 'Inactivity Time Interval',
-                  'description' => 'How many days should pass since last seen for a user to be considered inactive.',
-                  'optionscode' => "numeric\nmin=0",
-                  'value' => 90,
-                  ),
-        'deletiontime' => array(
-                  'title' => 'Deletion Time',
-                  'description' => 'How much time in days should a user remain inactive before being deleted. Zero(0) for unlimited.',
-                  'optionscode' => "numeric\nmin=0",
-                  'value' => 730,
-                  ),
-        'reminders' => array(
-                  'title' => 'Reminders',
-                  'description' => 'How many reminders should be emailed to a user before account deletion.',
-                  'optionscode' => "numeric\nmin=0",
-                  'value' => 90,
-                  ),
-        'reminderspacing' => array(
-                  'title' => 'Reminder Spacing',
-                  'description' => 'How much time in hours should pass between reminders.',
-                  'optionscode' => "numeric\nmin=0",
-                  'value' => 24,
-                  ),
-        'includenonverifiedaccounts' => array(
-                  'title' => 'Include Non-Verified Accounts',
-                  'description' => 'Whether or not to consider unverified accounts as inactive users.',
-                  'optionscode' => 'yesno',
-                  'value' => 0,
-                  ),
-        'includeawayusers' => array(
-                  'title' => 'Include Away Users',
-                  'description' => 'Allow identifying Away users as inactive.',
-                  'optionscode' => 'yesno',
-                  'value' => 1,
-                  ),
-        'inactiveusergroup' => array(
-                  'title' => 'Inactive Usergroup',
-                  'description' => 'Do NOT modify.',
-                  'optionscode' => "numeric\nmin=0",
-                  'value' => 0,
-                  ),
-        'selfbanusergroup' => array(
-                  'title' => 'Self-Ban Usergroup',
-                  'description' => 'Do NOT modify.',
-                  'optionscode' => "numeric\nmin=0",
-                  'value' => 0,
-                  ),
-        'keeptables' => array(
-                  'title' => 'Keep Inactive Users Data',
-                  'description' => 'Keep inactive users data after uninstall.',
-                  'optionscode' => 'yesno',
-                  'value' => 1,
-                  ),
-        )
-    );
-    
-    // Create our table collation
-    $collation = $db->build_create_table_collation(); // what is a "table collation"?
-    
-    if ($db->table_exists('inactive_user_settings'))
+    // Code to create the settings in MyBB settings table.
+    if (!$this->exist_settings())
     {
-      $this->load();
-    }
-    else
-    {
-      // getting the max group id
-      $this->$settings = array(
-        array("isid" => 1, "setting" => "inactivityinterval", "value" => "90"),
-        array("isid" => 2, "setting" => "deletiontime", "value" => "730"),
-        array("isid" => 3, "setting" => "reminders", "value" => "90"),
-        array("isid" => 4, "setting" => "reminderspacing", "value" => "24"),
-        array("isid" => 5, "setting" => "includenonverifiedaccounts", "value" => "0"),
-        array("isid" => 6, "setting" => "includeawayusers", "value" => "1"),
-        array("isid" => 7, "setting" => "inactiveusergroup", "value" => "0"),
-        array("isid" => 8, "setting" => "selfbanusergroup", "value" => "0")
+      $PL->settings(
+        'inactive_user',
+        'Inactive User Settings',
+        'Modify the way inactive users are handled.',
+        array(
+          'inactivityinterval' => array(
+                    'title' => 'Inactivity Time Interval',
+                    'description' => 'How many days should pass since last seen for a user to be considered inactive.',
+                    'optionscode' => "numeric\nmin=0",
+                    'value' => 90,
+                    ),
+          'deletiontime' => array(
+                    'title' => 'Deletion Time',
+                    'description' => 'How much time in days should a user remain inactive before being deleted. Zero(0) for unlimited.',
+                    'optionscode' => "numeric\nmin=0",
+                    'value' => 730,
+                    ),
+          'reminders' => array(
+                    'title' => 'Reminders',
+                    'description' => 'How many reminders should be emailed to a user before account deletion.',
+                    'optionscode' => "numeric\nmin=0",
+                    'value' => 90,
+                    ),
+          'reminderspacing' => array(
+                    'title' => 'Reminder Spacing',
+                    'description' => 'How much time in hours should pass between reminders.',
+                    'optionscode' => "numeric\nmin=0",
+                    'value' => 24,
+                    ),
+          'includenonverifiedaccounts' => array(
+                    'title' => 'Include Non-Verified Accounts',
+                    'description' => 'Whether or not to consider unverified accounts as inactive users.',
+                    'optionscode' => 'yesno',
+                    'value' => 0,
+                    ),
+          'includeawayusers' => array(
+                    'title' => 'Include Away Users',
+                    'description' => 'Allow identifying Away users as inactive.',
+                    'optionscode' => 'yesno',
+                    'value' => 1,
+                    ),
+          'inactiveusergroup' => array(
+                    'title' => 'Inactive Usergroup',
+                    'description' => 'Do NOT modify.',
+                    'optionscode' => "numeric\nmin=0",
+                    'value' => 0,
+                    ),
+          'selfbanusergroup' => array(
+                    'title' => 'Self-Ban Usergroup',
+                    'description' => 'Do NOT modify.',
+                    'optionscode' => "numeric\nmin=0",
+                    'value' => 0,
+                    ),
+          'keeptables' => array(
+                    'title' => 'Keep Inactive Users Data',
+                    'description' => 'Keep inactive users data after uninstall.',
+                    'optionscode' => 'yesno',
+                    'value' => 1,
+                    ),
+          )
       );
       
-      $max_gid = mysqli_fetch_all($db->write_query('select max(gid) as gid from ' .TABLE_PREFIX. 'usergroups;'), MYSQLI_ASSOC);  
-      $this->set("inactiveusergroup", (string)((int)$max_gid[0]['gid'] + 1));
-      $this->set("selfbanusergroup", (string)((int)$max_gid[0]['gid'] + 2));
-      
-      switch($db->type)
-      {
-      // only the "default" section is done
-        case "pgsql": 
-          $db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
-            mid serial,
-            message varchar(100) NOT NULL default '',
-            PRIMARY KEY (mid)
-          );");
-          break;
-        case "sqlite":
-          $db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
-            mid INTEGER PRIMARY KEY,
-            message varchar(100) NOT NULL default ''
-          );");
-          break;
-        default:
-          $db->write_query("CREATE TABLE ".TABLE_PREFIX."inactive_user_settings (
-            isid int unsigned NOT NULL,
-            setting varchar(50),
-            value varchar(250),
-            PRIMARY KEY (isid)
-          ) ENGINE=MyISAM{$collation};");
-          break;
-      }
-  
-    // append default settings to the settings table
-    $db->insert_query_multiple("inactive_user_settings", $this->$settings);
     }
     
   }
@@ -191,6 +139,8 @@ class inactiveUserSettings
    */
   public function settings()
   {
+    // Get the inactive_user settings group
+    // Get the settings from the database.
     return array_column($this->$settings, "value", "setting");
   }
 
@@ -202,8 +152,9 @@ class inactiveUserSettings
    */
   public function get($setting)
   {
-    $S = $this->settings(); //TODO: replace this with getting it from the database
-    return $S[$setting];
+    global $settings;
+    
+    return $settings["inactive_user_" .$setting];
   }
   
   /**
@@ -243,6 +194,7 @@ class inactiveUserSettings
   public function delete_usergroups()
   {
     global $db, $cache;
+    require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
     //add the delete query to delete the inactive usergroups from MyBB usergroups table.
     /*$db->delete_query
 
@@ -259,15 +211,28 @@ class inactiveUserSettings
     $db->delete_query("awaitingactivation", "uid='".(int)$user['uid']."' AND code='".$db->escape_string($mybb->input['token'])."' AND type='l'");
 
     */
-    $db->delete_query("usergroups", "gid in (" .$this->get('inactiveusergroup'). "," .$this->get('selfbanusergroup'). ")");
+    $db->delete_query("usergroups", "gid in (" .userGroups::INACTIVE. "," .userGroups::SELF_BAN. ")");
     $cache->update_usergroups();
+  }
+  
+  private function exist_settings()
+  {
+    global $settings;
+
+    // This plugin creates settings on install. Check if setting exists.
+    // Another example would be $db->table_exists() for database tables.
+    if(isset($settings['inactive_user_inactivityinterval']))
+    {
+        return true;
+    }
+    return false;
   }
   
   public function delete_settings()
   {
     global $PL;
     $PL or require_once PLUGINLIBRARY;
-    
-    $PL->settings_delete("inactive_user");
+    echo "about to delete the settings<br>";
+    $PL->settings_delete("inactive_user",true);
   }
 }

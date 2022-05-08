@@ -24,9 +24,11 @@ class inactiveUsers {
   /**
    * Creates the inactive users table if it still doesn't exist, the inactive usergroups.
    */
-  public function __construct($settings) 
+  public function __construct($iu_settings) 
   {
-    global $db, $cache;
+    global $db, $cache, $PL;
+    $PL or require_once PLUGINLIBRARY;
+    
     
    // Create inactive users table if it doesn't exist already
     if (!$db->table_exists('inactive_users'))
@@ -64,20 +66,46 @@ class inactiveUsers {
     }
     echo "exiting inactive users table creation<br>";
 
+    // Get the highest gid number within the usergroups table
+    $max_gid = $db->fetch_field($db->simple_select("usergroups", $fields="max(gid) as gid"),"gid");
+    settype($max_gid,"integer");
+    echo "calculated highest gid: ";
+    var_dump ($max_gid);
+    echo "<br />";
+    
+    // Based on $max_gid, edit the usergroups into "inc\plugins\inactive_user\usergroups_class.php"
+    $replacement = 'const INACTIVE = '. ($max_gid + 1) .'; const SELF_BAN = '. ($max_gid + 2) .';';
+    echo '<br />Replacement: "' .$replacement. '"<br />';
+    var_dump($PL->edit_core (
+      "inactive_user", 
+      "inc\plugins\inactive_user\usergroups_class.php", 
+      array(
+        'search'  => 'const INACTIVE = 0; const SELF_BAN = 0;', 
+        'replace'  => $replacement), 
+      true,
+      $debug));
+    echo "<br />";
+    print_r($debug);
+    
+    echo "<br />edited gids into the userGroup class<br />";
+    //TODO: undo these changes after deleting the usergroups on the uninstall function
+    
+    require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
+    
     //Create the "inactive" usergroup. Do nothing if it already exists.
     //if the inactive usergroup does not exist... 
     //append the inactive and self-banned(to be called "self_banned_user_plugin" maybe) inactive usergroups to the database.
 
-    var_dump($settings->get("inactiveusergroup"));
+    var_dump(userGroups::INACTIVE);
     echo "<br>";
-    var_dump($settings->get("selfbanusergroup"));
+    var_dump(userGroups::SELF_BAN);
     echo "<br>";
     $inactive_usergroups = array(
       array(
-        "gid" => (int)$settings->get("inactiveusergroup"),
+        "gid" => userGroups::INACTIVE,
         "type" => 2,
         "title" => "Inactive User",
-        "description" => "Users who have not being seen in more than " .$settings->get("inactivityinterval"). " days.",
+        "description" => "Users who have not being seen in more than " .$iu_settings->get("inactivityinterval"). " days.",
         "namestyle" => '<span style="color:#8c8c8c;">{username}</span>',
         "usertitle" => "Inactive",
         "stars" => 0,
@@ -166,7 +194,7 @@ class inactiveUsers {
         "canviewwarnlogs" => 0,
         "canuseipsearch" => 0
       ), array(
-        "gid" => (int)$settings->get("selfbanusergroup"),
+        "gid" => userGroups::SELF_BAN,
         "type" => 2,
         "title" => "Self-Banned User",
         "description" => "Users who have banned themselves in the process of deactivating.",
@@ -268,7 +296,7 @@ class inactiveUsers {
     $cache->update_usergroups();
     
     // Run the inactive user idetification script.
-    require_once MYBB_ROOT . "inc/tasks/inactive_user.php";
+    require_once MYBB_ROOT . "inc/plugins/inactive_user/inactive_user_ident.php";
 
     //TODO: Assign the "inactive" usergroup to the newly identified inactive user's primary and display.
     //update the primary and display usergroups to "inactive", and "additional" to an empty string with an update query with the user list gotten above.

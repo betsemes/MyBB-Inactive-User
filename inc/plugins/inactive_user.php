@@ -5,10 +5,14 @@
  * A simple system for the identification of inactive users for MyBB. It involves:
  * - identification of users who have not visited for a certain amount of time
  * - provides a way for users to deactivate their accounts
+ * 
  *
  * @author  Betsemes <betsemes@gmail.com>
  * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
  */
+ 
+/* ./inc/plugins/inactive_user.php 
+   Plugin core file containing the basic functions called by MyBB.*/
 
 // Disallow direct access to this file for security reasons
 if(!defined("IN_MYBB"))
@@ -50,11 +54,11 @@ function inactive_user_install()
   }
 
   // Create settings or load them from the database
-	$settings = new inactiveUserSettings();
+	$iu_settings = new inactiveUserSettings();
 	
   echo "entering inactive users table creation<br>";
   //Create the inactive users table
-  new inactiveUsers($settings);
+  new inactiveUsers($iu_settings);
 }
 
 /**
@@ -62,29 +66,15 @@ function inactive_user_install()
  */
 function inactive_user_is_installed()
 {
-  global $db;
+  global $settings;
 
-  //DONE: _is_installed() function: This must be changed when the plugin changes to keep tables after uninstallation.
-  // An "installed" setting must be added to signal whether or not the plugin is not installed. The inactive users table is intended to be created along with the settings. If that table do exist, check that setting.
-
-  $query = $db->simple_select("settinggroups", "*", "name='inactive_user'", array(
-    "order_by" => 'name',
-    "order_dir" => 'DESC',
-    "limit" => 1
-  ));
-
-  $settings = $db->fetch_array($query);
-
-	/*
-  echo "<pre>";
-  print_r($settings);
-  echo "</pre>";
-*/
-  
-  // If the inactive_user setting group exists then it means the plugin is installed because we only delete it on uninstallation
-  return $settings['name'] == 'inactive_user';
-  // If the table exists then it means the plugin is installed because we only drop it on uninstallation (no longer true)
-	// return $db->table_exists('inactive_users');
+  // This plugin creates settings on install. Check if setting exists.
+  if(isset($settings['inactive_user_inactivityinterval']))
+  {
+    return true;
+  }
+  return false;
+   
 }
 
 /**
@@ -94,16 +84,16 @@ function inactive_user_uninstall()
 {
   global $db, $cache;
   
-  $settings = new inactiveUserSettings();
+  $iu_settings = new inactiveUserSettings();
   
   // Delete the inactive usergroups.
-  $settings->delete_usergroups();
+  $iu_settings->delete_usergroups();
   
   // Delete the settings
-  $settings->delete_settings();
+  $iu_settings->delete_settings();
   
   // Drop the tables.
-  $db->drop_table('inactive_user_settings');
+  // $db->drop_table('inactive_user_settings');
   $db->drop_table('inactive_users');
   
 }

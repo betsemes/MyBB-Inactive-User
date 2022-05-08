@@ -10,6 +10,9 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
  */
 
+/* ./inc/plugins/inactive_user/inactive_user_ident.php
+   Inactive users identification script used by both the inactiveUsers class constructor and the ongoing identification task. */
+
 // Disallow direct access to this file for security reasons
 if(!defined("IN_MYBB"))
 {
@@ -27,11 +30,11 @@ if(!defined("IN_MYBB"))
         displaygroup as olddisplaygroup,
         additionalgroups as oldadditionalgroups,
         usertitle as usertitle,"
-        .TIME_NOW. " + (60 * 60 * 24 * " .$settings->get("deletiontime"). ") as returndate
+        .TIME_NOW. " + (60 * 60 * 24 * " .$iu_settings->get("deletiontime"). ") as returndate
       from " .TABLE_PREFIX. "users
       where
         (if(lastactive > lastvisit, lastactive, lastvisit) 
-          < ".TIME_NOW." - (60 * 60 * 24 * " .$settings->get("inactivityinterval"). "))
+          < ".TIME_NOW." - (60 * 60 * 24 * " .$iu_settings->get("inactivityinterval"). "))
         and (uid not in (select uid from " .TABLE_PREFIX. "inactive_users));"
       ), MYSQLI_ASSOC);
       
