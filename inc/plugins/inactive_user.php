@@ -82,8 +82,9 @@ function inactive_user_is_installed()
  */
 function inactive_user_uninstall()
 {
-  global $db, $cache;
-  
+  global $db, $cache, $PL;
+  $PL or require_once PLUGINLIBRARY;
+
   $iu_settings = new inactiveUserSettings();
   
   // Delete the inactive usergroups.
@@ -95,6 +96,12 @@ function inactive_user_uninstall()
   // Drop the tables.
   // $db->drop_table('inactive_user_settings');
   $db->drop_table('inactive_users');
+  
+  $PL->edit_core (
+      "inactive_user", 
+      "inc\plugins\inactive_user\usergroups_class.php", 
+      array(), 
+      true);
   
 }
 
