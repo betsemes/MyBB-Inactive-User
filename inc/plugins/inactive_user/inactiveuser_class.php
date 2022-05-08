@@ -295,13 +295,20 @@ class inactiveUsers {
     echo "updating the cache<br>";
     $cache->update_usergroups();
     
-    // Run the inactive user idetification script.
-    require_once MYBB_ROOT . "inc/plugins/inactive_user/inactive_user_ident.php";
+    // Run the inactive user idetification method.
+    $this->identify($iu_settings);
 
     //TODO: Assign the "inactive" usergroup to the newly identified inactive user's primary and display.
     //update the primary and display usergroups to "inactive", and "additional" to an empty string with an update query with the user list gotten above.
     
     
+  }
+  
+  public function identify($iu_settings) 
+  {
+    global $db;
+    // Run the inactive user idetification script.
+    require_once MYBB_ROOT . "inc/plugins/inactive_user/inactive_user_ident.php";
   }
 }
 
