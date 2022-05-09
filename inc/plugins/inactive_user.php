@@ -59,6 +59,7 @@ function inactive_user_install()
   echo "entering inactive users table creation<br>";
   //Create the inactive users table
   new inactiveUsers($iu_settings);
+  
 }
 
 /**
@@ -110,12 +111,46 @@ function inactive_user_uninstall()
 
 function inactive_user_activate()
 {
-  //TODO: mark each user in the inactive user table with the inactive usergroup.
+  global $db;
+  
   //TODO: schedule the inactive user identification script.
+  require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
+
+  // get inactive users data
+  $inactives = $db->simple_select('inactive_users', '*');
+  
+  // Assign the inactive usergroups
+  while($inactive = $db->fetch_array($inactives))
+  {
+    $gid = $inactive['deactmethod'] == 3 ? userGroups::SELF_BAN : userGroups::INACTIVE;
+    $db->update_query("users", 
+      array( 
+        "usergroup" => $gid, 
+        "displaygroup" => $gid),
+      'uid=' .$inactive['uid']
+    );    
+  }
 }
 
 function inactive_user_deactivate()
 {
+  global $db;
+  
   //TODO: unschedule the inactive user identification script.
-  //TODO: restore the original usergroups to users.
+  
+  // restore the original usergroups to users.
+  // get usergroups and displaygroups for all inactive users
+  $inactives = $db->simple_select('inactive_users', '*');
+  
+  // loop through the users table, for each inactive user in the users table, assign the usergroup and displaygroup gotten from the inactive users table
+  while($inactive = $db->fetch_array($inactives))
+  {
+    $db->update_query('users',
+      array(
+        'usergroup'=>$inactive['oldgroup'],
+        'displaygroup'=>$inactive['olddisplaygroup']),
+      'uid=' .$inactive['uid']
+    );
+  }
+  
 }

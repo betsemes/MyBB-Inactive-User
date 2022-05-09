@@ -4,14 +4,15 @@
  *
  * A simple system for the identification of inactive users for MyBB. It involves:
  * - identification of users who have not visited for a certain amount of time
- * - provides a way for users to deactivate their accounts
+ * - providing a way for users to deactivate their accounts
+ *
+ * File: ./inc/plugins/inactive_user/inactive_user_ident.php
+ * Inactive users identification script used by both the inactiveUsers 
+ * class constructor and the ongoing identification task.
  *
  * @author  Betsemes <betsemes@gmail.com>
  * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
  */
-
-/* ./inc/plugins/inactive_user/inactive_user_ident.php
-   Inactive users identification script used by both the inactiveUsers class constructor and the ongoing identification task. */
 
 // Disallow direct access to this file for security reasons
 if(!defined("IN_MYBB"))
@@ -55,5 +56,14 @@ if(!defined("IN_MYBB"))
       { 
         echo "inserting inactive users<br>";
         $db->insert_query_multiple("inactive_users", $inactives);
-      }
+      
+        require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
 
+        // Assign the inactive usergroups to identified users
+        $db->update_query("users", 
+          array( 
+            "usergroup" => userGroups::INACTIVE, 
+            "displaygroup" => userGroups::INACTIVE),
+          'uid in (' .implode(',',array_column($inactives,'uid')). ')'
+        );
+      }

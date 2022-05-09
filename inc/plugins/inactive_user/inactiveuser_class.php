@@ -204,7 +204,7 @@ class inactiveUsers {
         "starimage" => "images/star.png",
         "image" => "",
         "disporder" => 0,
-        "isbannedgroup" => 0,
+        "isbannedgroup" => 1,
         "canview" => 0,
         "canviewthreads" => 0,
         "canviewprofiles" => 0,
