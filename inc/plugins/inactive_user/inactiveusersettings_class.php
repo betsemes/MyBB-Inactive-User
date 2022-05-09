@@ -13,8 +13,6 @@
 /* ./inc/plugins/inactive_user/inactiveusersettings_class.php
    File containing the class for interfacing with the plugin settings. */
 
-//TODO: Rewrite the functions that still use the old approach by using PluginLibrary. Read directly from the database.
-
 /**
  * Manages the settings table.
  */
@@ -45,7 +43,6 @@ class inactiveUserSettings
   
   // private $dbase;
   
-  //TODO: replace code used to update the settings attribute with database update.
   /**
    * Constructor; creates and populates the settings table, or loads settings if it exists.
    */

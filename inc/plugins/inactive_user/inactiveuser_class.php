@@ -88,7 +88,6 @@ class inactiveUsers {
     print_r($debug);
     
     echo "<br />edited gids into the userGroup class<br />";
-    //TODO: undo these changes after deleting the usergroups on the uninstall function
     
     require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
     
@@ -298,10 +297,6 @@ class inactiveUsers {
     // Run the inactive user idetification method.
     $this->identify($iu_settings);
 
-    //TODO: Assign the "inactive" usergroup to the newly identified inactive user's primary and display.
-    //update the primary and display usergroups to "inactive", and "additional" to an empty string with an update query with the user list gotten above.
-    
-    
   }
   
   public function identify($iu_settings) 

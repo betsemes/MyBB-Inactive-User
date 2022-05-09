@@ -20,6 +20,8 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
+    //TODO: exclude banned users on the identification process
+    
     // Get the inactive users.
     echo "getting the inactive users<br>";
     $inactives = mysqli_fetch_all($db->write_query(
@@ -30,13 +32,19 @@ if(!defined("IN_MYBB"))
         usergroup as oldgroup,
         displaygroup as olddisplaygroup,
         additionalgroups as oldadditionalgroups,
-        usertitle as usertitle,"
-        .TIME_NOW. " + (60 * 60 * 24 * " .$iu_settings->get("deletiontime"). ") as returndate
+        usertitle as usertitle,
+        if(
+          regdate > if(lastactive > lastvisit, lastactive, lastvisit),
+          regdate + (60 * 60 * 24 * " .$iu_settings->get("deletiontime"). "), 
+          if(lastactive > lastvisit, lastactive, lastvisit) + (60 * 60 * 24 * " .$iu_settings->get("deletiontime"). ")
+        ) as returndate
       from " .TABLE_PREFIX. "users
       where
         (if(lastactive > lastvisit, lastactive, lastvisit) 
           < ".TIME_NOW." - (60 * 60 * 24 * " .$iu_settings->get("inactivityinterval"). "))
-        and (uid not in (select uid from " .TABLE_PREFIX. "inactive_users));"
+        and (uid not in (select uid from " .TABLE_PREFIX. "inactive_users))
+        and (usergroup in (select gid from " .TABLE_PREFIX. "usergroups
+          where isbannedgroup=0));"
       ), MYSQLI_ASSOC);
       
       // Set the fields to the appropriate data types
