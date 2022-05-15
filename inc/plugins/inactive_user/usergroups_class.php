@@ -16,8 +16,8 @@
 class userGroups 
 {
   
-	// Usergroup constants;
+	// Usergroup properties;
   
-  const INACTIVE = 0; const SELF_BAN = 0;
+  public static $inactive = 0, $self_ban = 0;
   
 }

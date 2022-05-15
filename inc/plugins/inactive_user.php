@@ -28,6 +28,13 @@ if(!defined("PLUGINLIBRARY"))
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.php";
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveuser_class.php";
 
+//TODO: add the hook name here. 
+// It should be the place where the user has been successfully logged in.
+// The right hook may be datahandler_login_complete_end, member_do_login_end or member_login_end
+// This post: https://community.mybb.com/thread-170142-post-1155681.html#pid1155681 has useful information.
+//TODO: add the hook function to be called
+// $plugins->add_hook('<hook name>', 'inactive_user_reactivate');
+
 function inactive_user_info()
 {
 	return array(
@@ -58,7 +65,10 @@ function inactive_user_install()
 	
   echo "entering inactive users table creation<br>";
   //Create the inactive users table
-  new inactiveUsers($iu_settings);
+  $inactives = new inactiveUsers($iu_settings);
+  
+  // Run the inactive user idetification method.
+  $inactives->identify($iu_settings);
   
 }
 
@@ -115,21 +125,23 @@ function inactive_user_activate()
   
   //TODO: schedule the inactive user identification script.
   require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
-
+  //TODO: Require the PluginLibrary
   // get inactive users data
   $inactives = $db->simple_select('inactive_users', '*');
   
   // Assign the inactive usergroups
   while($inactive = $db->fetch_array($inactives))
   {
-    $gid = $inactive['deactmethod'] == 3 ? userGroups::SELF_BAN : userGroups::INACTIVE;
+    $gid = $inactive['deactmethod'] == 3 ? userGroups::$self_ban : userGroups::$inactive;
     $db->update_query("users", 
       array( 
         "usergroup" => $gid, 
-        "displaygroup" => $gid),
+        "displaygroup" => 0),
       'uid=' .$inactive['uid']
     );    
   }
+  
+  //TODO: use PluginLibrary's new task() method to schedule the task.
 }
 
 function inactive_user_deactivate()
@@ -153,4 +165,9 @@ function inactive_user_deactivate()
     );
   }
   
+}
+
+function inactive_user_reactivate()
+{
+  //TODO: add user reactivation code here
 }

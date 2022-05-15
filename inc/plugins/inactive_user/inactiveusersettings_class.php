@@ -44,14 +44,12 @@ class inactiveUserSettings
   // private $dbase;
   
   /**
-   * Constructor; creates and populates the settings table, or loads settings if it exists.
+   * Constructor; creates the settings, or loads settings if they already exist.
    */
   public function __construct()
   {
     global $db, $PL;
     $PL or require_once PLUGINLIBRARY;
-    
-    // Need to store the settings in MyBB settings table so that they can be accessed and modified through the settings control panel.
     
     // Check if PluginLibrary is the required version.
     if($PL->version < 13)
@@ -118,7 +116,7 @@ class inactiveUserSettings
   }
   
   /**
-   * Settings getter.
+   * General settings getter.
    *
    * @return array Associative array containing the settings and the setting names as keys.
    */
@@ -131,6 +129,15 @@ class inactiveUserSettings
 
   /**
    * Gets the specified setting.
+   *
+   * Settings that can be retrieved are:
+   * * inactivityinterval
+   * * deletiontime
+   * * reminders
+   * * reminderspacing
+   * * includenonverifiedaccounts
+   * * includeawayusers
+   * * keeptables
    *
    * @param string $setting The setting name as it appears in the settings table.
    * @return string The setting value.
@@ -151,10 +158,10 @@ class inactiveUserSettings
    */
   public function set($setting, $value)
   {
-    //TODO: add code to update the database before doing this.
-    for ($i = 0; $i <= sizeof($this->$settings); $i++)
+    //TODO: outdated code. Rewrite this to access MyBB settings.
+    for ($i = 0; $i <= sizeof($this->settings); $i++)
     {
-      if($this->$settings[$i]["setting"] === $setting)
+      if($this->settings[$i]["setting"] === $setting)
       {
         $this->$settings[$i]["value"] = (string)$value;
         return true;
@@ -196,7 +203,7 @@ class inactiveUserSettings
     $db->delete_query("awaitingactivation", "uid='".(int)$user['uid']."' AND code='".$db->escape_string($mybb->input['token'])."' AND type='l'");
 
     */
-    $db->delete_query("usergroups", "gid in (" .userGroups::INACTIVE. "," .userGroups::SELF_BAN. ")");
+    $db->delete_query("usergroups", "gid in (" .userGroups::$inactive. "," .userGroups::$self_ban. ")");
     $cache->update_usergroups();
   }
   

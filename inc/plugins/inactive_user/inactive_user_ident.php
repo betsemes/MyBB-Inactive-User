@@ -20,8 +20,6 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
-    //TODO: exclude banned users on the identification process
-    
     // Get the inactive users.
     echo "getting the inactive users<br>";
     $inactives = mysqli_fetch_all($db->write_query(
@@ -62,16 +60,21 @@ if(!defined("IN_MYBB"))
       echo "inactive users identified: ". count($inactives). "<br>";
       if (count($inactives) != 0 )
       { 
-        echo "inserting inactive users<br>";
+        echo 'inserting inactive users<br>';
+        var_dump($inactives); echo '<br>';
         $db->insert_query_multiple("inactive_users", $inactives);
+        echo "inactive users inserted<br>";
       
         require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
 
-        // Assign the inactive usergroups to identified users
+        echo 'userGroups::$inactive: ' .userGroups::$inactive. '<br>';
+        echo 'userGroups::$self_ban: ' .userGroups::$self_ban. '<br>';
+        echo 'Assign the inactive usergroups to identified users<br>';
         $db->update_query("users", 
           array( 
-            "usergroup" => userGroups::INACTIVE, 
-            "displaygroup" => userGroups::INACTIVE),
+            "usergroup" => userGroups::$inactive, 
+            "displaygroup" => userGroups::$inactive),
           'uid in (' .implode(',',array_column($inactives,'uid')). ')'
         );
+        echo 'User table updated.<br>';
       }
