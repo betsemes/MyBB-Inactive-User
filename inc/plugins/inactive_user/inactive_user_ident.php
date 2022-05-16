@@ -73,7 +73,8 @@ if(!defined("IN_MYBB"))
         $db->update_query("users", 
           array( 
             "usergroup" => userGroups::$inactive, 
-            "displaygroup" => userGroups::$inactive),
+            "displaygroup" => userGroups::$inactive,
+            "usertitle" => ''),
           'uid in (' .implode(',',array_column($inactives,'uid')). ')'
         );
         echo 'User table updated.<br>';

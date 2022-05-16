@@ -16,10 +16,6 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
-/*
- * TODO: Public API definition
- */
-
 /**
  * Creates and accesses the inactive users table, the inactive usergroups,
  * and provides a user API.
@@ -369,8 +365,8 @@ class inactiveUsers {
  * user may use the inactiveUserSettings methods in his code; but it's 
  * not included as a public API, thus they may change without being 
  * considered backwards incompatible.
- * Add serviceable getters and setters for retrieving specific settings 
- * for the public API.
+ * Add serviceable accessors and mutators for retrieving specific
+ * settings for the public API.
  * In order to do this successfully, the general inactiveUserSettings 
  * getter and setter should be up to date.
  * get_inactivity_interval
@@ -387,7 +383,7 @@ class inactiveUsers {
  * set_include_nonverified_accounts
  * set_include_away_users
  * set_keep_tables
- * Add serviceable getters and setters for retrieving specific data 
+ * Add serviceable accessors and mutators for retrieving specific data 
  * inactive users for the public API.
  * 
  */

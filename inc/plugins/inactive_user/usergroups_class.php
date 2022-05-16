@@ -16,7 +16,7 @@
 class userGroups 
 {
   
-	// Usergroup properties;
+	// Usergroup properties
   
   public static $inactive = 0, $self_ban = 0;
   

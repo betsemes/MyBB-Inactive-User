@@ -28,18 +28,16 @@ if(!defined("PLUGINLIBRARY"))
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.php";
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveuser_class.php";
 
-//TODO: add the hook name here. 
 // It should be the place where the user has been successfully logged in.
-// The right hook may be datahandler_login_complete_end, member_do_login_end or member_login_end
+// The right hook is datahandler_login_complete_end as per this post: https://community.mybb.com/thread-235652-post-1377346.html#pid1377346
 // This post: https://community.mybb.com/thread-170142-post-1155681.html#pid1155681 has useful information.
-//TODO: add the hook function to be called
-// $plugins->add_hook('<hook name>', 'inactive_user_reactivate');
+$plugins->add_hook('datahandler_login_complete_end', 'user_reactivate');
 
 function inactive_user_info()
 {
 	return array(
 		"name"          => "Inactive User",
-		"description"   => "Monitors user activity, moves inactive users to the 'inactive users' usergroup, moves them back to their previous usergroup upon signing up, and prunes long inactive users.",
+		"description"   => "Monitors user activity, moves inactive users to the 'inactive users' usergroup, moves them back to their previous usergroup upon logging back in, and prunes long inactive users.",
 		"website"       => "/index.html",
 		"author"        => "Betsemes",
 		"authorsite"    => "mailto:betsemes@gmail.com",
@@ -121,18 +119,20 @@ function inactive_user_uninstall()
 
 function inactive_user_activate()
 {
-  global $db;
+  global $db, $PL;
+  $PL or require_once PLUGINLIBRARY;
   
-  //TODO: schedule the inactive user identification script.
   require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
-  //TODO: Require the PluginLibrary
+  
   // get inactive users data
   $inactives = $db->simple_select('inactive_users', '*');
   
   // Assign the inactive usergroups
   while($inactive = $db->fetch_array($inactives))
   {
-    $gid = $inactive['deactmethod'] == 3 ? userGroups::$self_ban : userGroups::$inactive;
+    $gid = $inactive['deactmethod'] == 3 
+      ? userGroups::$self_ban 
+      : userGroups::$inactive;
     $db->update_query("users", 
       array( 
         "usergroup" => $gid, 
@@ -141,14 +141,23 @@ function inactive_user_activate()
     );    
   }
   
-  //TODO: use PluginLibrary's new task() method to schedule the task.
+  // Schedule the 'inactive_user' task.
+  $PL->tasks(array(
+    'title' => 'Inactive User Identification',
+    'description' => 'Identifies users who have stopped visiting.',
+    'file' => 'inactive_user',
+    'minute' => '*'
+    )
+  );
 }
 
 function inactive_user_deactivate()
 {
-  global $db;
+  global $db, $PL;
+  $PL or require_once PLUGINLIBRARY;
   
-  //TODO: unschedule the inactive user identification script.
+  // Unschedule the 'inactive_user' task.
+  $PL->tasks_delete('inactive_user');
   
   // restore the original usergroups to users.
   // get usergroups and displaygroups for all inactive users
@@ -167,7 +176,30 @@ function inactive_user_deactivate()
   
 }
 
-function inactive_user_reactivate()
+/**
+ * Sets a user back to active status.
+ * 
+ * This function hooks to the datahandler_login_complete_end MyBB hook
+ * to change the user status back to active. Do not confuse with the 
+ * _activate or _deactivate functions intended for activating/deactivating
+ * the plugin itself.
+ */
+function user_reactivate($handler)
 {
-  //TODO: add user reactivation code here
+  global $db;
+  
+  // Restore the usergroups from the inactive users table
+  $data = $db->fetch_array($db->simple_select(
+    'inactive_users', "*", "uid=" .$handler->login_data['uid']));
+
+  // Set the usergroups in the users table
+  $db->update_query('users', array(
+    'usergroup' => $data['oldgroup'],
+    'displaygroup' => $data['olddisplaygroup'],
+    'additionalgroups' => $data['oldadditionalgroups'],
+    'usertitle' => $data['usertitle']
+    ), 'uid=' .$handler->login_data['uid']);
+
+  // Delete the user from the inactive users table
+  $db->delete_query('inactive_users','uid=' .$handler->login_data['uid']);
 }

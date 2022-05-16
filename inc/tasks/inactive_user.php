@@ -20,10 +20,8 @@ function task_inactive_user($task)
 {
   echo "inside task function<br>";
 
-	/*
-	 * task operations
-	 */
-  echo "creating settings object...<br>";
+	// task operations
+	echo "creating settings object...<br>";
   $iu_settings = new inactiveUserSettings();
   echo "creating inactiveUsers object...<br>";
   $inusers = new inactiveUsers($iu_settings);
@@ -31,6 +29,6 @@ function task_inactive_user($task)
   $inusers->identify($iu_settings);
   echo "exited identification method<br>";
 
-	add_task_log($task, "The Inactive User task successfully ran.");
+	add_task_log($task, "The Inactive User Identification task successfully ran.");
   echo "task logged<br>";
 }
