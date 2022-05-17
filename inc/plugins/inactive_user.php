@@ -20,6 +20,8 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
+// TODO: Add requirements list and installation/uninstallation instructions.
+// I need to resolve the PluginLibrary problem. Maybe redirect interested users to my PluginLibrary clone repo while it's still not being pulled into the original repo.
 if(!defined("PLUGINLIBRARY"))
 {
   define("PLUGINLIBRARY", MYBB_ROOT."inc/plugins/pluginlibrary.php");

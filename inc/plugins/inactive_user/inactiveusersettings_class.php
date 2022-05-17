@@ -19,6 +19,8 @@
 class inactiveUserSettings
 {
   /**
+   * TODO: Provide a setting for specifying the inactive users username color.
+   *
    * Defines the default settings for the plugin
    *
    * Settings: 
