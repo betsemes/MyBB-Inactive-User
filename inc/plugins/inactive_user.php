@@ -20,11 +20,10 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
-// TODO: Add requirements list and installation/uninstallation instructions.
 // I need to resolve the PluginLibrary problem. Maybe redirect interested users to my PluginLibrary clone repo while it's still not being pulled into the original repo.
-if(!defined("PLUGINLIBRARY"))
+if(!defined("IUIUPLUGINLIBRARY"))
 {
-  define("PLUGINLIBRARY", MYBB_ROOT."inc/plugins/pluginlibrary.php");
+  define("IUIUPLUGINLIBRARY", MYBB_ROOT."inc/plugins/inactive_user/pluginlibrary.php");
 }
 
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.php";
@@ -54,7 +53,7 @@ function inactive_user_info()
  */
 function inactive_user_install()
 {
-	if(!file_exists(PLUGINLIBRARY))
+	if(!file_exists(IUIUPLUGINLIBRARY))
   {
     flash_message("PluginLibrary is missing.", "error");
     admin_redirect("index.php?module=config-plugins");
@@ -94,21 +93,20 @@ function inactive_user_is_installed()
 function inactive_user_uninstall()
 {
   global $db, $cache, $PL;
-  $PL or require_once PLUGINLIBRARY;
+  $PL or require_once IUIUPLUGINLIBRARY;
 
   $iu_settings = new inactiveUserSettings();
   
-  // Delete the inactive usergroups.
+  echo 'Delete the inactive usergroups.<br>';
   $iu_settings->delete_usergroups();
   
-  // Drop the tables.
-  // $db->drop_table('inactive_user_settings');
+  echo 'Drop the tables.<br>';
   if (!$iu_settings->get('keeptables'))
   {
     $db->drop_table('inactive_users');
   }
   
-  // Delete the settings
+  echo 'Delete the settings<br>';
   $iu_settings->delete_settings();
   
   $PL->edit_core (
@@ -122,14 +120,15 @@ function inactive_user_uninstall()
 function inactive_user_activate()
 {
   global $db, $PL;
-  $PL or require_once PLUGINLIBRARY;
+  $PL or require_once IUIUPLUGINLIBRARY;
   
   require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
   
-  // get inactive users data
+  echo "activating...<br>";
+  echo 'get inactive users data<br>';
   $inactives = $db->simple_select('inactive_users', '*');
   
-  // Assign the inactive usergroups
+  echo 'Assign the inactive usergroups<br>';
   while($inactive = $db->fetch_array($inactives))
   {
     $gid = $inactive['deactmethod'] == 3 
@@ -143,7 +142,7 @@ function inactive_user_activate()
     );    
   }
   
-  // Schedule the 'inactive_user' task.
+  echo "Schedule the 'inactive_user' task.<br>";
   $PL->tasks(array(
     'title' => 'Inactive User Identification',
     'description' => 'Identifies users who have stopped visiting.',
@@ -156,16 +155,16 @@ function inactive_user_activate()
 function inactive_user_deactivate()
 {
   global $db, $PL;
-  $PL or require_once PLUGINLIBRARY;
+  $PL or require_once IUIUPLUGINLIBRARY;
   
-  // Unschedule the 'inactive_user' task.
+  echo "Unschedule the 'inactive_user' task.<br>";
   $PL->tasks_delete('inactive_user');
   
-  // restore the original usergroups to users.
+  echo 'restore the original usergroups to users.<br>';
   // get usergroups and displaygroups for all inactive users
   $inactives = $db->simple_select('inactive_users', '*');
   
-  // loop through the users table, for each inactive user in the users table, assign the usergroup and displaygroup gotten from the inactive users table
+  echo 'loop through the users table, for each inactive user in the users table, assign the usergroup and displaygroup gotten from the inactive users table<br>';
   while($inactive = $db->fetch_array($inactives))
   {
     $db->update_query('users',

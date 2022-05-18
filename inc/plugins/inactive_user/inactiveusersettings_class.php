@@ -51,7 +51,7 @@ class inactiveUserSettings
   public function __construct()
   {
     global $db, $PL;
-    $PL or require_once PLUGINLIBRARY;
+    $PL or require_once IUIUPLUGINLIBRARY;
     
     // Check if PluginLibrary is the required version.
     if($PL->version < 13)
@@ -225,7 +225,7 @@ class inactiveUserSettings
   public function delete_settings()
   {
     global $PL;
-    $PL or require_once PLUGINLIBRARY;
+    $PL or require_once IUIUPLUGINLIBRARY;
     echo "about to delete the settings<br>";
     $PL->settings_delete("inactive_user",true);
   }

@@ -79,3 +79,4 @@ if(!defined("IN_MYBB"))
         );
         echo 'User table updated.<br>';
       }
+      echo "exiting inactive_user_ident.php<br>";

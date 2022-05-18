@@ -31,7 +31,7 @@ class inactiveUsers {
   public function __construct($iu_settings) 
   {
     global $db, $cache, $PL;
-    $PL or require_once PLUGINLIBRARY;
+    $PL or require_once IUIUPLUGINLIBRARY;
     
     
    // Create inactive users table if it doesn't exist already
