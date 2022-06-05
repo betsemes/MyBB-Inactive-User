@@ -7,7 +7,7 @@
  * - provides a way for users to deactivate their accounts
  *
  * @author  Betsemes <betsemes@gmail.com>
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
 
 /* ./inc/plugins/inactive_user/inactiveusersettings_class.php
@@ -15,11 +15,14 @@
 
 /**
  * Manages the settings table.
+ *
+ * @internal
  */
 class inactiveUserSettings
 {
   /**
    * TODO: Provide a setting for specifying the inactive users username color.
+   * TODO: delete this attribute.
    *
    * Defines the default settings for the plugin
    *
@@ -188,32 +191,22 @@ class inactiveUserSettings
   public function delete_usergroups()
   {
     global $db, $cache;
-    require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
-    //add the delete query to delete the inactive usergroups from MyBB usergroups table.
-    /*$db->delete_query
-
-    Used to perform a delete query on a table in a database. Receives three parameters:
-
-    table
-        The name of the table.
-    where
-        The where clause.
-    limit
-    The maximum amount of rows to be deleted. Default is unlimited. 
+    require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
     
-    Example:
-    $db->delete_query("awaitingactivation", "uid='".(int)$user['uid']."' AND code='".$db->escape_string($mybb->input['token'])."' AND type='l'");
-
-    */
+    //add the delete query to delete the inactive usergroups from MyBB usergroups table.
     $db->delete_query("usergroups", "gid in (" .userGroups::$inactive. "," .userGroups::$self_ban. ")");
     $cache->update_usergroups();
   }
   
+  /**
+   * Returns true if the settings exist; false otherwise.
+   */
   private function exist_settings()
   {
     global $settings;
 
-    // This plugin creates settings on install. Check if setting exists.
+    // This plugin creates settings on install and deletes them on uninstall.
+    // Check if settings exist.
     // Another example would be $db->table_exists() for database tables.
     if(isset($settings['inactive_user_inactivityinterval']))
     {
@@ -222,6 +215,9 @@ class inactiveUserSettings
     return false;
   }
   
+  /**
+   * Deletes the settings created by this plugin.
+   */
   public function delete_settings()
   {
     global $PL;

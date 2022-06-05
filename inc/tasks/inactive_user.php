@@ -7,7 +7,7 @@
  * - provides a way for users to deactivate their accounts
  *
  * @author  Betsemes <betsemes@gmail.com>
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
 
 // Disallow direct access to this file for security reasons
@@ -16,6 +16,11 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
+/**
+ * Task function to schedule the identification of inactive users.
+ *
+ * @internal
+ */
 function task_inactive_user($task)
 {
   echo "inside task function<br>";

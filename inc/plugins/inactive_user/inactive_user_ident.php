@@ -11,7 +11,7 @@
  * class constructor and the ongoing identification task.
  *
  * @author  Betsemes <betsemes@gmail.com>
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
 
 // Disallow direct access to this file for security reasons
@@ -70,6 +70,7 @@ if(!defined("IN_MYBB"))
         echo 'userGroups::$inactive: ' .userGroups::$inactive. '<br>';
         echo 'userGroups::$self_ban: ' .userGroups::$self_ban. '<br>';
         echo 'Assign the inactive usergroups to identified users<br>';
+        //TODO: Set displaygroup to zero
         $db->update_query("users", 
           array( 
             "usergroup" => userGroups::$inactive, 

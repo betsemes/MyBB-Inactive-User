@@ -7,7 +7,7 @@
  * - provides a way for users to deactivate their accounts
  *
  * @author  Betsemes <betsemes@gmail.com>
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
 
 /**

@@ -8,7 +8,7 @@
  * 
  *
  * @author  Betsemes <betsemes@gmail.com>
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
  
 /* ./inc/plugins/inactive_user.php 
@@ -20,7 +20,6 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
-// I need to resolve the PluginLibrary problem. Maybe redirect interested users to my PluginLibrary clone repo while it's still not being pulled into the original repo.
 if(!defined("IUIUPLUGINLIBRARY"))
 {
   define("IUIUPLUGINLIBRARY", MYBB_ROOT."inc/plugins/inactive_user/pluginlibrary.php");
@@ -34,6 +33,12 @@ require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveuser_class.php";
 // This post: https://community.mybb.com/thread-170142-post-1155681.html#pid1155681 has useful information.
 $plugins->add_hook('datahandler_login_complete_end', 'user_reactivate');
 
+// TODO: tag all the mybb-plugin interface functions as @/internal
+/**
+ * Information about the plugin provided to MyBB.
+ *
+ * @internal
+ */
 function inactive_user_info()
 {
 	return array(
@@ -50,6 +55,8 @@ function inactive_user_info()
 
 /**
  * Creates the settings and inactive users tables.
+ *
+ * @internal
  */
 function inactive_user_install()
 {
@@ -73,6 +80,8 @@ function inactive_user_install()
 
 /**
  * Returns true if the inactive users table exists, false otherwise.
+ *
+ * @internal
  */
 function inactive_user_is_installed()
 {
@@ -89,6 +98,8 @@ function inactive_user_is_installed()
 
 /**
  * Deletes the inactive usergroups. Drops the tables.
+ *
+ * @internal
  */
 function inactive_user_uninstall()
 {
@@ -111,18 +122,24 @@ function inactive_user_uninstall()
   
   $PL->edit_core (
       "inactive_user", 
-      "inc\plugins\inactive_user\usergroups_class.php", 
+      "inc/plugins/inactive_user/usergroups_class.php", 
       array(), 
       true);
   
 }
 
+/**
+ * Assigns the inactive usergroup to users in the inactive users table.
+ * Enables the task.
+ *
+ * @internal
+ */
 function inactive_user_activate()
 {
   global $db, $PL;
   $PL or require_once IUIUPLUGINLIBRARY;
   
-  require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
+  require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
   
   echo "activating...<br>";
   echo 'get inactive users data<br>';
@@ -152,6 +169,11 @@ function inactive_user_activate()
   );
 }
 
+/**
+ * Deletes the task and restores usergroups
+ *
+ * @internal
+ */
 function inactive_user_deactivate()
 {
   global $db, $PL;
@@ -180,10 +202,14 @@ function inactive_user_deactivate()
 /**
  * Sets a user back to active status.
  * 
- * This function hooks to the datahandler_login_complete_end MyBB hook
- * to change the user status back to active. Do not confuse with the 
- * _activate or _deactivate functions intended for activating/deactivating
+ * This function is intended to be hooked to the 
+ * *datahandler_login_complete_end* MyBB hook to change the user status 
+ * back to active. Do not confuse with the _activate or _deactivate 
+ * functions intended for activating/deactivating
  * the plugin itself.
+ *
+ * @param $handler Data handler provided by the runhooks function.
+ * @internal Called by MyBB.
  */
 function user_reactivate($handler)
 {

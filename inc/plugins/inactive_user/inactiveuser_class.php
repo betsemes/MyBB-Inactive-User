@@ -7,7 +7,7 @@
  * - provides a way for users to deactivate their accounts
  *
  * @author  Betsemes <betsemes@gmail.com>
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License Version 3
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
 
 // Disallow direct access to this file for security reasons
@@ -76,7 +76,10 @@ class inactiveUsers {
     if (userGroups::$inactive == 0)
     {
       // echo "Get the highest gid number within the usergroups table<br>";
-      $max_gid = $db->fetch_field($db->simple_select("usergroups", $fields="max(gid) as gid"),"gid");
+      $max_gid = $db->fetch_field(
+        $db->simple_select(
+          "usergroups", 
+          $fields="max(gid) as gid"),"gid");
       settype($max_gid,"integer");
       // echo "calculated highest gid: ";
       // var_dump ($max_gid);
@@ -105,12 +108,15 @@ class inactiveUsers {
       
       //Create the "inactive" usergroup. Do nothing if it already exists.
       //if the inactive usergroup does not exist... 
-      //append the inactive and self-banned(to be called "self_banned_user_plugin" maybe) inactive usergroups to the database.
+      //append the inactive and self-banned usergroups to the database.
 
       // var_dump(userGroups::$inactive);
       // echo "<br>";
       // var_dump(userGroups::$self_ban);
       // echo "<br>";
+      //TODO: Look for trimming the following array for simplification.
+      // Most of those fields are holding the default value defined 
+      // in the usergroups table. 
       $inactive_usergroups = array(
         array(
           "gid" => userGroups::$inactive,
@@ -310,6 +316,10 @@ class inactiveUsers {
 
   }
   
+  /**
+   * TODO: copy the code in inactive_user/inactive_user_ident.php here 
+   * to replace the require_once. Delete inactive_user/inactive_user_ident.php
+   */
   public function identify($iu_settings) 
   {
     global $db;
@@ -324,7 +334,7 @@ class inactiveUsers {
    * for the days amount configured into the settings.
    *
    * @param $user The username or user id.
-   * @return boolean Whether or not the user specified in the parameter is inactive.
+   * @return boolean **TRUE**: the user specified in the parameter is inactive.
    * @api
    */
   public function is_inactive($user) 
@@ -349,7 +359,7 @@ class inactiveUsers {
    * within the period of days configured into the settings.
    *
    * @param $user The username or user id.
-   * @return boolean Whether or not the user specified in the parameter is active.
+   * @return boolean **TRUE**: the user specified in the parameter is active.
    * @api
    */
   public function is_active($user)
