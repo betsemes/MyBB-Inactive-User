@@ -137,8 +137,10 @@ function inactive_user_uninstall()
 function inactive_user_activate()
 {
   global $db, $PL;
+  echo "loading pluginlibrary<br>";
   $PL or require_once IUIUPLUGINLIBRARY;
   
+  echo "loading usergroups_class<br>";
   require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
   
   echo "activating...<br>";

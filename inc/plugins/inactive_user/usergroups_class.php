@@ -10,6 +10,7 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3
  */
 
+echo "creating userGroups class<br>";
 /**
  * Only holds the usergroup IDs assigned to the inactive usergroups.
  */
@@ -21,3 +22,4 @@ class userGroups
   public static $inactive = 0, $self_ban = 0;
   
 }
+echo "userGroups class created<br>";
