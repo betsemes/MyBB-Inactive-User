@@ -18,7 +18,8 @@ class userGroups
 {
   // make static methods as much as possible
   
-  const INACTIVE_USER_XML = '../repos/inactive_user/inc/plugins/inactive_user/inactive_user.xml';
+  const INACTIVE_USER_XML = MYBB_ROOT.'inc/plugins/inactive_user/inactive_user.xml';
+  // const INACTIVE_USER_XML = '../repos/inactive_user/inc/plugins/inactive_user/inactive_user.xml';
   const INACTIVE_USER_XML_CONTENT = <<<'XMLCONTENT'
   <inactive-user>
     <usergroups>
@@ -103,7 +104,8 @@ XMLCONTENT;
     $max_gid = $db->fetch_field(
       $db->simple_select(
         "usergroups", 
-        $fields="max(gid) as gid"),"gid");
+        $fields="max(gid) as gid"),
+      "gid");
     settype($max_gid,"integer");
     return $max_gid;
   }
@@ -134,4 +136,5 @@ XMLCONTENT;
   
 }
 echo "userGroups class created<br>";
-// $inactive_usergroups = new userGroups();
+global $inactive_usergroups;
+$inactive_usergroups = new userGroups();

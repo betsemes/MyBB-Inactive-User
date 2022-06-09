@@ -136,23 +136,25 @@ function inactive_user_uninstall()
  */
 function inactive_user_activate()
 {
-  global $db, $PL;
+  global $db, $PL, $inactive_usergroups;
+  $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
   echo "loading pluginlibrary<br>";
   $PL or require_once IUIUPLUGINLIBRARY;
   
   echo "loading usergroups_class<br>";
-  $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
   
   echo "activating...<br>";
   echo 'get inactive users data<br>';
   $inactives = $db->simple_select('inactive_users', '*');
   
-  echo 'Assign the inactive usergroups<br>';
+  echo 'Assign the inactive usergroups: ';
+  echo 'self-ban: '. $inactive_usergroups->get_self_ban(). ' ';
+  echo 'inactive: '. $inactive_usergroups->get_inactive(). '<br>';
   while($inactive = $db->fetch_array($inactives))
   {
     $gid = $inactive['deactmethod'] == 3 
-      ? $inactive_usergroups->self_ban 
-      : $inactive_usergroups->inactive;
+      ? $inactive_usergroups->get_self_ban() 
+      : $inactive_usergroups->get_inactive();
     $db->update_query("users", 
       array( 
         "usergroup" => $gid, 

@@ -30,8 +30,9 @@ class inactiveUsers {
    */
   public function __construct($iu_settings) 
   {
-    global $db, $cache, $PL;
+    global $db, $cache, $PL, $inactive_usergroups;
     $PL or require_once IUIUPLUGINLIBRARY;
+    $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
     
     
    // Create inactive users table if it doesn't exist already
@@ -70,60 +71,27 @@ class inactiveUsers {
     echo "exiting inactive users table creation<br>";
     }
 
-    $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
-    
+       
     // if the usergroups are still not created, create them.
     // echo "$inactive_usergroups->inactive: ". $inactive_usergroups->inactive ."<br>";
-    if ($inactive_usergroups->inactive == 0)
+    if ($inactive_usergroups->get_inactive() == 0)
     {
       // echo "Get the highest gid number within the usergroups table<br>";
-      // $max_gid = $db->fetch_field(
-        // $db->simple_select(
-          // "usergroups", 
-          // $fields="max(gid) as gid"),"gid");
-      // settype($max_gid,"integer");
-      
       $max_gid = $inactive_usergroups->next_gid();
       
-      // echo "calculated highest gid: ";
-      // var_dump ($max_gid);
-      // echo "<br />";
-      $inactive_usergroups->inactive = $max_gid + 1;
-      $inactive_usergroups->self_ban = $max_gid + 2;
-      
-      // echo 'Based on $max_gid, edit the usergroups into "inc/plugins/inactive_user/usergroups_class.php"<br>';
-      $replacement = 'public $inactive = ' .$inactive_usergroups->inactive. ', $self_ban = ' .$inactive_usergroups->self_ban. ';';
-      // echo '<br />Replacement: "' .$replacement. '"<br />';
-      // var_dump(
-      $PL->edit_core (
-        "inactive_user", 
-        "inc/plugins/inactive_user/usergroups_class.php", 
-        array(
-          'search'  => 'public $inactive = 0, $self_ban = 0;', 
-          'replace'  => $replacement), 
-        true,
-        $debug);
-        // );
-      // echo "<br />";
-      // print_r($debug);
-      
-      // echo "<br />edited gids into the userGroup class<br />";
-      
+      $inactive_usergroups->set_inactive($max_gid + 1);
+      $inactive_usergroups->set_self_ban($max_gid + 2);
       
       //Create the "inactive" usergroup. Do nothing if it already exists.
       //if the inactive usergroup does not exist... 
       //append the inactive and self-banned usergroups to the database.
 
-      // var_dump($inactive_usergroups->inactive);
-      // echo "<br>";
-      // var_dump($inactive_usergroups->self_ban);
-      // echo "<br>";
       //TODO: Look for trimming the following array for simplification.
       // Most of those fields are holding the default value defined 
       // in the usergroups table. 
-      $inactive_usergroups = array(
+      $inact_usergroups = array(
         array(
-          "gid" => $inactive_usergroups->inactive,
+          "gid" => $inactive_usergroups->get_inactive(),
           "type" => 2,
           "title" => "Inactive User",
           "description" => "Users who have not being seen in more than " .$iu_settings->get("inactivityinterval"). " days.",
@@ -215,7 +183,7 @@ class inactiveUsers {
           "canviewwarnlogs" => 0,
           "canuseipsearch" => 0
         ), array(
-          "gid" => $inactive_usergroups->self_ban,
+          "gid" => $inactive_usergroups->get_self_ban(),
           "type" => 2,
           "title" => "Self-Banned User",
           "description" => "Users who have banned themselves in the process of deactivating.",
@@ -311,7 +279,7 @@ class inactiveUsers {
       
       // add the usergroups to the usergroups table
       // echo "inserting inactive_usergroups<br>";
-      $db->insert_query_multiple("usergroups", $inactive_usergroups);
+      $db->insert_query_multiple("usergroups", $inact_usergroups);
       // update the cache
       // echo "updating the cache<br>";
       $cache->update_usergroups();
