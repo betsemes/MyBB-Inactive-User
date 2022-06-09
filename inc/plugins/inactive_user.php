@@ -141,7 +141,7 @@ function inactive_user_activate()
   $PL or require_once IUIUPLUGINLIBRARY;
   
   echo "loading usergroups_class<br>";
-  require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
+  $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
   
   echo "activating...<br>";
   echo 'get inactive users data<br>';
@@ -151,8 +151,8 @@ function inactive_user_activate()
   while($inactive = $db->fetch_array($inactives))
   {
     $gid = $inactive['deactmethod'] == 3 
-      ? userGroups::$self_ban 
-      : userGroups::$inactive;
+      ? $inactive_usergroups->self_ban 
+      : $inactive_usergroups->inactive;
     $db->update_query("users", 
       array( 
         "usergroup" => $gid, 

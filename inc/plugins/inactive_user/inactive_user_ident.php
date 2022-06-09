@@ -65,16 +65,16 @@ if(!defined("IN_MYBB"))
         $db->insert_query_multiple("inactive_users", $inactives);
         echo "inactive users inserted<br>";
       
-        require_once MYBB_ROOT ."inc\plugins\inactive_user\usergroups_class.php";
-
-        echo 'userGroups::$inactive: ' .userGroups::$inactive. '<br>';
-        echo 'userGroups::$self_ban: ' .userGroups::$self_ban. '<br>';
+        $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
+        
+        echo '$inactive_usergroups->inactive: ' .$inactive_usergroups->inactive. '<br>';
+        echo '$inactive_usergroups->self_ban: ' .$inactive_usergroups->self_ban. '<br>';
         echo 'Assign the inactive usergroups to identified users<br>';
         //TODO: Set displaygroup to zero
         $db->update_query("users", 
           array( 
-            "usergroup" => userGroups::$inactive, 
-            "displaygroup" => userGroups::$inactive,
+            "usergroup" => $inactive_usergroups->inactive, 
+            "displaygroup" => 0,
             "usertitle" => ''),
           'uid in (' .implode(',',array_column($inactives,'uid')). ')'
         );
