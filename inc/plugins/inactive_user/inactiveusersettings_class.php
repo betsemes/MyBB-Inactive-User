@@ -186,19 +186,6 @@ class inactiveUserSettings
   }
 
   /**
-   * Deletes the usergroups added to the usergroups table.
-   */
-  public function delete_usergroups()
-  {
-    global $db, $cache;
-    $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
-    
-    //add the delete query to delete the inactive usergroups from MyBB usergroups table.
-    $db->delete_query("usergroups", "gid in (" .$inactive_usergroups->inactive. "," .$inactive_usergroups->self_ban. ")");
-    $cache->update_usergroups();
-  }
-  
-  /**
    * Returns true if the settings exist; false otherwise.
    */
   private function exist_settings()

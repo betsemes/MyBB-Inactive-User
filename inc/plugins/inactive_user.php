@@ -27,6 +27,7 @@ if(!defined("IUIUPLUGINLIBRARY"))
 
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.php";
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveuser_class.php";
+require_once MYBB_ROOT . "inc/plugins/inactive_user/usergroups_class.php";
 
 // It should be the place where the user has been successfully logged in.
 // The right hook is datahandler_login_complete_end as per this post: https://community.mybb.com/thread-235652-post-1377346.html#pid1377346
@@ -106,10 +107,12 @@ function inactive_user_uninstall()
   global $db, $cache, $PL;
   $PL or require_once IUIUPLUGINLIBRARY;
 
-  $iu_settings = new inactiveUserSettings();
-  
   echo 'Delete the inactive usergroups.<br>';
-  $iu_settings->delete_usergroups();
+  $iu_usergroups = new userGroups();
+  $iu_usergroups->delete_inactive();
+  $iu_usergroups->delete_self_ban();
+  
+  $iu_settings = new inactiveUserSettings();
   
   echo 'Drop the tables.<br>';
   if (!$iu_settings->get('keeptables'))

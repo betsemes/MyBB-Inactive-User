@@ -74,10 +74,12 @@ class inactiveUsers {
        
     // if the usergroups are still not created, create them.
     // echo "$inactive_usergroups->inactive: ". $inactive_usergroups->inactive ."<br>";
-    if ($inactive_usergroups->get_inactive() == 0)
+    $inactive_usergroups->add_inactive();
+    $inactive_usergroups->add_self_ban();
+/*    if ($inactive_usergroups->get_inactive() == 0)
     {
       // echo "Get the highest gid number within the usergroups table<br>";
-      $max_gid = $inactive_usergroups->next_gid();
+      $max_gid = $inactive_usergroups->max_gid();
       
       $inactive_usergroups->set_inactive($max_gid + 1);
       $inactive_usergroups->set_self_ban($max_gid + 2);
@@ -283,8 +285,8 @@ class inactiveUsers {
       // update the cache
       // echo "updating the cache<br>";
       $cache->update_usergroups();
-      
     }
+*/      
 
   }
   
