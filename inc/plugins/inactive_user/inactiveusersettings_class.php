@@ -111,7 +111,7 @@ class inactiveUserSettings
                     'title' => 'Keep Inactive Users Data',
                     'description' => 'Keep inactive users data after uninstall.',
                     'optionscode' => 'yesno',
-                    'value' => 1,
+                    'value' => 0,
                     ),
           )
       );
