@@ -68,17 +68,17 @@ class inactiveUsers {
           ) ENGINE=MyISAM{$collation};");
           break;
       }
-    echo "exiting inactive users table creation<br>";
+    if(DEBUG) echo "exiting inactive users table creation<br>";
     }
 
        
     // if the usergroups are still not created, create them.
-    // echo "$inactive_usergroups->inactive: ". $inactive_usergroups->inactive ."<br>";
+    // if(DEBUG) echo "$inactive_usergroups->inactive: ". $inactive_usergroups->inactive ."<br>";
     $inactive_usergroups->add_inactive();
     $inactive_usergroups->add_self_ban();
 /*    if ($inactive_usergroups->get_inactive() == 0)
     {
-      // echo "Get the highest gid number within the usergroups table<br>";
+      // if(DEBUG) echo "Get the highest gid number within the usergroups table<br>";
       $max_gid = $inactive_usergroups->max_gid();
       
       $inactive_usergroups->set_inactive($max_gid + 1);
@@ -280,10 +280,10 @@ class inactiveUsers {
       );
       
       // add the usergroups to the usergroups table
-      // echo "inserting inactive_usergroups<br>";
+      // if(DEBUG) echo "inserting inactive_usergroups<br>";
       $db->insert_query_multiple("usergroups", $inact_usergroups);
       // update the cache
-      // echo "updating the cache<br>";
+      // if(DEBUG) echo "updating the cache<br>";
       $cache->update_usergroups();
     }
 */      

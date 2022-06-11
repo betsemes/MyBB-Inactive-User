@@ -23,17 +23,17 @@ if(!defined("IN_MYBB"))
  */
 function task_inactive_user($task)
 {
-  echo "inside task function<br>";
+  if(DEBUG) echo "inside task function<br>";
 
 	// task operations
-	echo "creating settings object...<br>";
+	if(DEBUG) echo "creating settings object...<br>";
   $iu_settings = new inactiveUserSettings();
-  echo "creating inactiveUsers object...<br>";
+  if(DEBUG) echo "creating inactiveUsers object...<br>";
   $inusers = new inactiveUsers($iu_settings);
-  echo "identifying...<br>";
+  if(DEBUG) echo "identifying...<br>";
   $inusers->identify($iu_settings);
-  echo "exited identification method<br>";
+  if(DEBUG) echo "exited identification method<br>";
 
 	add_task_log($task, "The Inactive User Identification task successfully ran.");
-  echo "task logged<br>";
+  if(DEBUG) echo "task logged<br>";
 }

@@ -12,7 +12,7 @@
 
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.php";
 
-echo "creating userGroups class<br>";
+if(DEBUG) echo "creating userGroups class<br>";
 /**
  * Creates and manages the usergroups created to assign inactive users to.
  *
@@ -46,17 +46,17 @@ XMLCONTENT;
   
   public function __construct ($inactive=0, $self_ban=0) 
   {
-    echo "userGroups constructor: loading xml<br>";
+    if(DEBUG) echo "userGroups constructor: loading xml<br>";
     $inactive_user = $this->load();
       
-    echo "userGroups constructor: setting gids<br>";
+    if(DEBUG) echo "userGroups constructor: setting gids<br>";
     if ($inactive != 0) $inactive_user->usergroups->inactive = $inactive;
     if ($self_ban != 0) $inactive_user->usergroups->{'self-ban'} = $self_ban;
     
-    echo "userGroups constructor: saving xml<br>";
+    if(DEBUG) echo "userGroups constructor: saving xml<br>";
     $inactive_user->saveXML(self::INACTIVE_USER_XML);
   
-    echo "userGroups constructor: exiting...<br>";
+    if(DEBUG) echo "userGroups constructor: exiting...<br>";
   }
   
   // accessors and mutators
@@ -67,9 +67,9 @@ XMLCONTENT;
     // generate the next gid
     // if self ban == next gid, then set inactive to gid + 1 
     // and return it.
-    echo "get_inactive(): loading...<br>";
+    if(DEBUG) echo "get_inactive(): loading...<br>";
     $inactive_user = $this->load();
-    echo "get_inactive(): xml loaded<br>";
+    if(DEBUG) echo "get_inactive(): xml loaded<br>";
     if ($inactive_user->usergroups->inactive == 0)
     {
       if ($inactive_user->usergroups->{'self-ban'} == self::max_gid() + 1)
@@ -204,7 +204,7 @@ XMLCONTENT;
     //TODO: Look for trimming the following array for simplification.
     // Most of those fields are holding the default value defined 
     // in the usergroups table. 
-    echo "add_inactive(): creating inactive usergroup array.<br>";
+    if(DEBUG) echo "add_inactive(): creating inactive usergroup array.<br>";
     $inact_usergroups = array(
       "gid" => $this->get_inactive(),
       "type" => 2,
@@ -300,10 +300,10 @@ XMLCONTENT;
       );
       
       // add the usergroups to the usergroups table
-      echo "add_inactive(): inserting inactive_usergroup<br>";
+      if(DEBUG) echo "add_inactive(): inserting inactive_usergroup<br>";
       $db->insert_query("usergroups", $inact_usergroups);
       // update the cache
-      echo "add_inactive(): updating the cache<br>";
+      if(DEBUG) echo "add_inactive(): updating the cache<br>";
       $cache->update_usergroups();
   }
   
@@ -322,7 +322,7 @@ XMLCONTENT;
     //TODO: Look for trimming the following array for simplification.
     // Most of those fields are holding the default value defined 
     // in the usergroups table. 
-    echo "add_self_ban(): creating inactive usergroup array.<br>";
+    if(DEBUG) echo "add_self_ban(): creating inactive usergroup array.<br>";
     $inact_usergroups = array(
       "gid" => $this->get_self_ban(),
       "type" => 2,
@@ -418,10 +418,10 @@ XMLCONTENT;
       );
       
       // add the usergroups to the usergroups table
-      echo "add_self_ban(): inserting inactive_usergroup<br>";
+      if(DEBUG) echo "add_self_ban(): inserting inactive_usergroup<br>";
       $db->insert_query("usergroups", $inact_usergroups);
       // update the cache
-      echo "add_self_ban(): updating the cache<br>";
+      if(DEBUG) echo "add_self_ban(): updating the cache<br>";
       $cache->update_usergroups();
   }
   
@@ -464,7 +464,7 @@ XMLCONTENT;
    */
   private function load()
   {
-    echo "load(): loading xml ". self::INACTIVE_USER_XML ."<br>";
+    if(DEBUG) echo "load(): loading xml ". self::INACTIVE_USER_XML ."<br>";
     if (file_exists(self::INACTIVE_USER_XML)) 
     {
       $inactive_user = simplexml_load_file(self::INACTIVE_USER_XML);
@@ -473,10 +473,10 @@ XMLCONTENT;
     {
       $inactive_user = new SimpleXMLElement(self::INACTIVE_USER_XML_CONTENT);
     }
-    echo "load(): xml loaded<br>";
+    if(DEBUG) echo "load(): xml loaded<br>";
     return $inactive_user;
   }
 }
-echo "userGroups class created<br>";
+if(DEBUG) echo "userGroups class created<br>";
 global $inactive_usergroups;
 $inactive_usergroups = new userGroups();

@@ -79,31 +79,31 @@ class inactiveUserSettings
                     ),
           'deletiontime' => array(
                     'title' => 'Deletion Time',
-                    'description' => 'How much time in days should a user remain inactive before being deleted. Zero(0) for unlimited.',
+                    'description' => 'How much time in days should a user remain inactive before being deleted. Zero(0) for unlimited. <strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => "numeric\nmin=0",
                     'value' => 730,
                     ),
           'reminders' => array(
                     'title' => 'Reminders',
-                    'description' => 'How many reminders should be emailed to a user before account deletion.',
+                    'description' => 'How many reminders should be emailed to a user before account deletion. <strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => "numeric\nmin=0",
                     'value' => 90,
                     ),
           'reminderspacing' => array(
                     'title' => 'Reminder Spacing',
-                    'description' => 'How much time in hours should pass between reminders.',
+                    'description' => 'How much time in hours should pass between reminders. <strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => "numeric\nmin=0",
                     'value' => 24,
                     ),
           'includenonverifiedaccounts' => array(
                     'title' => 'Include Non-Verified Accounts',
-                    'description' => 'Whether or not to consider unverified accounts as inactive users.',
+                    'description' => 'Whether or not to consider unverified accounts as inactive users. <strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => 'yesno',
                     'value' => 0,
                     ),
           'includeawayusers' => array(
                     'title' => 'Include Away Users',
-                    'description' => 'Allow identifying Away users as inactive.',
+                    'description' => 'Allow identifying Away users as inactive. <strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => 'yesno',
                     'value' => 1,
                     ),
@@ -209,7 +209,7 @@ class inactiveUserSettings
   {
     global $PL;
     $PL or require_once IUIUPLUGINLIBRARY;
-    echo "about to delete the settings<br>";
+    if(DEBUG) echo "about to delete the settings<br>";
     $PL->settings_delete("inactive_user",true);
   }
 }

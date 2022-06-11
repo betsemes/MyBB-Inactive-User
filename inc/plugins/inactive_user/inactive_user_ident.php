@@ -19,9 +19,10 @@ if(!defined("IN_MYBB"))
 {
 	die("Direct initialization of this file is not allowed.");
 }
+require_once MYBB_ROOT . "inc/plugins/inactive_user/usergroups_class.php";
 
     // Get the inactive users.
-    echo "getting the inactive users<br>";
+    if(DEBUG) echo "getting the inactive users<br>";
     $inactives = mysqli_fetch_all($db->write_query(
       "select
         uid,"
@@ -57,27 +58,28 @@ if(!defined("IN_MYBB"))
       }
 
       // If there are inactive users identified, add them to the table.
-      echo "inactive users identified: ". count($inactives). "<br>";
+      if(DEBUG) echo "inactive users identified: ". count($inactives). "<br>";
+      $inactive_usergroups = new userGroups();
       if (count($inactives) != 0 )
       { 
-        echo 'inserting inactive users<br>';
-        var_dump($inactives); echo '<br>';
+        if(DEBUG) echo 'inserting inactive users<br>';
+        if(DEBUG) var_dump($inactives); if(DEBUG) echo '<br>';
         $db->insert_query_multiple("inactive_users", $inactives);
-        echo "inactive users inserted<br>";
+        if(DEBUG) echo "inactive users inserted<br>";
       
         $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
         
-        echo '$inactive_usergroups->inactive: ' .$inactive_usergroups->inactive. '<br>';
-        echo '$inactive_usergroups->self_ban: ' .$inactive_usergroups->self_ban. '<br>';
-        echo 'Assign the inactive usergroups to identified users<br>';
+        // if(DEBUG) echo '$inactive_usergroups->inactive: ' .$inactive_usergroups->get_inactive(). '<br>';
+        // if(DEBUG) echo '$inactive_usergroups->self_ban: ' .$inactive_usergroups->get_self_ban(). '<br>';
+        if(DEBUG) echo 'Assign the inactive usergroups to identified users<br>';
         //TODO: Set displaygroup to zero
         $db->update_query("users", 
           array( 
-            "usergroup" => $inactive_usergroups->inactive, 
+            "usergroup" => $inactive_usergroups->get_inactive(), 
             "displaygroup" => 0,
             "usertitle" => ''),
           'uid in (' .implode(',',array_column($inactives,'uid')). ')'
         );
-        echo 'User table updated.<br>';
+        if(DEBUG) echo 'User table updated.<br>';
       }
-      echo "exiting inactive_user_ident.php<br>";
+      if(DEBUG) echo "exiting inactive_user_ident.php<br>";

@@ -1,5 +1,5 @@
 # Inactive User
-Version: 0.1.0-alpha
+Version: 0.1.1-alpha
 
 A plugin for MyBB 1.8.30 to identify and manage users that have gone inactive.
 
@@ -13,3 +13,7 @@ The Inactive User plugin version number conforms with [Semantic Versioning 2.0.0
 ### Installation
 * Upload the contents of the **/inc** folder to your forum's **/inc** folder.
 * Go to **Configuration \>\> Plugins**	and click on **Install & Activate**.
+
+Changes for version 0.1.1-alpha
+* Backslash bug fixed
+* The "Keep Inactive Users Data" setting was set to **no** by default so that the inactive users table is deleted on uninstall.

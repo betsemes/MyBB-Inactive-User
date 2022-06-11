@@ -20,6 +20,11 @@ if(!defined("IN_MYBB"))
 	die("Direct initialization of this file is not allowed.");
 }
 
+if (!defined("DEBUG"))
+{
+  define("DEBUG", false);
+}
+
 if(!defined("IUIUPLUGINLIBRARY"))
 {
   define("IUIUPLUGINLIBRARY", MYBB_ROOT."inc/plugins/inactive_user/pluginlibrary.php");
@@ -70,7 +75,7 @@ function inactive_user_install()
   // Create settings or load them from the database
 	$iu_settings = new inactiveUserSettings();
 	
-  echo "entering inactive users table creation<br>";
+  if(DEBUG) echo "entering inactive users table creation<br>";
   //Create the inactive users table
   $inactives = new inactiveUsers($iu_settings);
   
@@ -107,20 +112,20 @@ function inactive_user_uninstall()
   global $db, $cache, $PL;
   $PL or require_once IUIUPLUGINLIBRARY;
 
-  echo 'Delete the inactive usergroups.<br>';
+  if(DEBUG) echo 'Delete the inactive usergroups.<br>';
   $iu_usergroups = new userGroups();
   $iu_usergroups->delete_inactive();
   $iu_usergroups->delete_self_ban();
   
   $iu_settings = new inactiveUserSettings();
   
-  echo 'Drop the tables.<br>';
+  if(DEBUG) echo 'Drop the tables.<br>';
   if (!$iu_settings->get('keeptables'))
   {
     $db->drop_table('inactive_users');
   }
   
-  echo 'Delete the settings<br>';
+  if(DEBUG) echo 'Delete the settings<br>';
   $iu_settings->delete_settings();
   
   $PL->edit_core (
@@ -141,18 +146,18 @@ function inactive_user_activate()
 {
   global $db, $PL, $inactive_usergroups;
   $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
-  echo "loading pluginlibrary<br>";
+  if(DEBUG) echo "loading pluginlibrary<br>";
   $PL or require_once IUIUPLUGINLIBRARY;
   
-  echo "loading usergroups_class<br>";
+  if(DEBUG) echo "loading usergroups_class<br>";
   
-  echo "activating...<br>";
-  echo 'get inactive users data<br>';
+  if(DEBUG) echo "activating...<br>";
+  if(DEBUG) echo 'get inactive users data<br>';
   $inactives = $db->simple_select('inactive_users', '*');
   
-  echo 'Assign the inactive usergroups: ';
-  echo 'self-ban: '. $inactive_usergroups->get_self_ban(). ' ';
-  echo 'inactive: '. $inactive_usergroups->get_inactive(). '<br>';
+  if(DEBUG) echo 'Assign the inactive usergroups: ';
+  if(DEBUG) echo 'self-ban: '. $inactive_usergroups->get_self_ban(). ' ';
+  if(DEBUG) echo 'inactive: '. $inactive_usergroups->get_inactive(). '<br>';
   while($inactive = $db->fetch_array($inactives))
   {
     $gid = $inactive['deactmethod'] == 3 
@@ -166,7 +171,7 @@ function inactive_user_activate()
     );    
   }
   
-  echo "Schedule the 'inactive_user' task.<br>";
+  if(DEBUG) echo "Schedule the 'inactive_user' task.<br>";
   $PL->tasks(array(
     'title' => 'Inactive User Identification',
     'description' => 'Identifies users who have stopped visiting.',
@@ -186,14 +191,14 @@ function inactive_user_deactivate()
   global $db, $PL;
   $PL or require_once IUIUPLUGINLIBRARY;
   
-  echo "Unschedule the 'inactive_user' task.<br>";
+  if(DEBUG) echo "Unschedule the 'inactive_user' task.<br>";
   $PL->tasks_delete('inactive_user');
   
-  echo 'restore the original usergroups to users.<br>';
+  if(DEBUG) echo 'restore the original usergroups to users.<br>';
   // get usergroups and displaygroups for all inactive users
   $inactives = $db->simple_select('inactive_users', '*');
   
-  echo 'loop through the users table, for each inactive user in the users table, assign the usergroup and displaygroup gotten from the inactive users table<br>';
+  if(DEBUG) echo 'loop through the users table, for each inactive user in the users table, assign the usergroup and displaygroup gotten from the inactive users table<br>';
   while($inactive = $db->fetch_array($inactives))
   {
     $db->update_query('users',
