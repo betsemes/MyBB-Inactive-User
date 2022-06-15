@@ -13,6 +13,7 @@
 /* ./inc/plugins/inactive_user/inactiveusersettings_class.php
    File containing the class for interfacing with the plugin settings. */
 
+//TODO: Provide a setting for specifying the inactive users username color.
 /**
  * Manages the settings table.
  *
@@ -20,9 +21,8 @@
  */
 class inactiveUserSettings
 {
+//TODO: delete this attribute.
   /**
-   * TODO: Provide a setting for specifying the inactive users username color.
-   * TODO: delete this attribute.
    *
    * Defines the default settings for the plugin
    *
@@ -49,7 +49,7 @@ class inactiveUserSettings
   // private $dbase;
   
   /**
-   * Constructor; creates the settings, or loads settings if they already exist.
+   * Constructor; creates the settings if they still don't exist.
    */
   public function __construct()
   {
@@ -63,7 +63,7 @@ class inactiveUserSettings
       admin_redirect("index.php?module=config-plugins");
     }
     
-    // Code to create the settings in MyBB settings table.
+    // Create the settings in MyBB settings table.
     if (!$this->exist_settings())
     {
       $PL->settings(
@@ -79,31 +79,31 @@ class inactiveUserSettings
                     ),
           'deletiontime' => array(
                     'title' => 'Deletion Time',
-                    'description' => 'How much time in days should a user remain inactive before being deleted. Zero(0) for unlimited. <strong>NOT YET IMPLEMENTED</strong>',
+                    'description' => 'How much time in days should a user remain inactive before being deleted. Zero(0) for unlimited. <br><strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => "numeric\nmin=0",
                     'value' => 730,
                     ),
           'reminders' => array(
                     'title' => 'Reminders',
-                    'description' => 'How many reminders should be emailed to a user before account deletion. <strong>NOT YET IMPLEMENTED</strong>',
+                    'description' => 'How many reminders should be emailed to a user before account deletion. <br><strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => "numeric\nmin=0",
                     'value' => 90,
                     ),
           'reminderspacing' => array(
                     'title' => 'Reminder Spacing',
-                    'description' => 'How much time in hours should pass between reminders. <strong>NOT YET IMPLEMENTED</strong>',
+                    'description' => 'How much time in hours should pass between reminders. <br><strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => "numeric\nmin=0",
                     'value' => 24,
                     ),
           'includenonverifiedaccounts' => array(
                     'title' => 'Include Non-Verified Accounts',
-                    'description' => 'Whether or not to consider unverified accounts as inactive users. <strong>NOT YET IMPLEMENTED</strong>',
+                    'description' => 'Whether or not to consider unverified accounts as inactive users. <br><strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => 'yesno',
                     'value' => 0,
                     ),
           'includeawayusers' => array(
                     'title' => 'Include Away Users',
-                    'description' => 'Allow identifying Away users as inactive. <strong>NOT YET IMPLEMENTED</strong>',
+                    'description' => 'Allow identifying Away users as inactive. <br><strong>NOT YET IMPLEMENTED</strong>',
                     'optionscode' => 'yesno',
                     'value' => 1,
                     ),
@@ -121,18 +121,6 @@ class inactiveUserSettings
   }
   
   /**
-   * General settings getter.
-   *
-   * @return array Associative array containing the settings and the setting names as keys.
-   */
-  public function settings()
-  {
-    // Get the inactive_user settings group
-    // Get the settings from the database.
-    return array_column($this->$settings, "value", "setting");
-  }
-
-  /**
    * Gets the specified setting.
    *
    * Settings that can be retrieved are:
@@ -145,7 +133,7 @@ class inactiveUserSettings
    * * keeptables
    *
    * @param string $setting The setting name as it appears in the settings table.
-   * @return string The setting value.
+   * @return string The setting's value.
    */
   public function get($setting)
   {
@@ -157,7 +145,9 @@ class inactiveUserSettings
   /**
    * Sets the specified setting to the provided value.
    *
-   * @param string $setting The setting name as it appears in the settings table.
+   * Settings that can be set are the same as in the get() method.
+   *
+   * @param string $setting The setting.
    * @param string $value The value to be used to set the setting with.
    * @return boolean True if the setting was updated successfully. False otherwise.
    */
@@ -175,16 +165,6 @@ class inactiveUserSettings
     return false;
   }
   
-  //TODO: Consider deleting this.
-  public function load()
-  {
-    global $db;
-    
-    $this->$settings = mysqli_fetch_all($db->write_query(
-    "select * from ".TABLE_PREFIX."inactive_user_settings;"
-    ), MYSQLI_ASSOC);
-  }
-
   /**
    * Returns true if the settings exist; false otherwise.
    */
@@ -194,7 +174,6 @@ class inactiveUserSettings
 
     // This plugin creates settings on install and deletes them on uninstall.
     // Check if settings exist.
-    // Another example would be $db->table_exists() for database tables.
     if(isset($settings['inactive_user_inactivityinterval']))
     {
         return true;

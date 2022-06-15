@@ -15,18 +15,32 @@ require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.p
 if(DEBUG) echo "creating userGroups class<br>";
 /**
  * Creates and manages the usergroups created to assign inactive users to.
+ * 
+ * As part of the system for creating and managing inactive users,
+ * two usergroups are created; the inactive usergroup, and the self-ban
+ * usergroup. The inactive usergroup is used to identify those users who
+ * have not been seen for the amount of time set on the settings. It's
+ * also used for the users who have explicitly deactivated their accouns
+ * (not yet implemented). It's defined to give the usernames a gray 
+ * color, and display "Inactive User" as a usertitle. The self-ban 
+ * usergroup is used for those users who in addition to deactivate their
+ * accounts, have also chosen to self-ban to prevent themselves to 
+ * return too early (not yet implemented). In addition of giving the 
+ * usernames a gray color, and display "Inactive User" as a usertitle,
+ * it also draws a strikethrough line across the username, meaning the
+ * user is self-banned.
  *
  * @api
  */
 class userGroups 
 {
-  //TODO: The constructor should also create the usergroups.
   /**
    * File holding the calculated and assigned inactive gids.
    *
    * The inactive_user.xml file keeps configuration data not intended
    * for access from MyBB admincp, thus, not intended to be changed 
    * once it's set.
+   *
    * @internal
    */
   const INACTIVE_USER_XML = MYBB_ROOT.'inc/plugins/inactive_user/inactive_user.xml';
@@ -42,8 +56,21 @@ XMLCONTENT;
   
 	// Usergroup properties
   
+  //TODO: delete this
   public $inactive = 0, $self_ban = 0;
   
+  /**
+   * Calculates the gids that'll be the inactive usergroups and stores
+   * them in the xml file. {@internal TODO: The constructor should also 
+   * create the usergroups.}
+   *
+   * @param $inactive The gid to be assigned to the inactive usergroup.
+   *                  Defaults to zero which instructs the constructor 
+   *                  to calculate it.
+   * @param $self_ban The gid to be assigned to the self ban usergroup.
+   *                  Defaults to zero which instructs the constructor 
+   *                  to calculate it.
+   */
   public function __construct ($inactive=0, $self_ban=0) 
   {
     if(DEBUG) echo "userGroups constructor: loading xml<br>";
@@ -53,6 +80,13 @@ XMLCONTENT;
     if ($inactive != 0) $inactive_user->usergroups->inactive = $inactive;
     if ($self_ban != 0) $inactive_user->usergroups->{'self-ban'} = $self_ban;
     
+    // PROBLEM: it is not calculating the usergroups at all, so the 
+    // behavior is wrong if no parameters are given. This shouldn't 
+    // be a problem in this plugin; but may be a problem if it's used
+    // as a library on another plugin.
+    //TODO: add code to calculate the gids if they are still not set 
+    // in the xml file.
+    
     if(DEBUG) echo "userGroups constructor: saving xml<br>";
     $inactive_user->saveXML(self::INACTIVE_USER_XML);
   
@@ -61,30 +95,29 @@ XMLCONTENT;
   
   // accessors and mutators
   
+  /**
+   * Inactive gid accessor. Calculates it if it hasn't.
+   *
+   * @returns integer Inactive usergroup gid
+   */
   public function get_inactive()
   {
-    //if inactive usergroup is zero...
-    // generate the next gid
-    // if self ban == next gid, then set inactive to gid + 1 
-    // and return it.
     if(DEBUG) echo "get_inactive(): loading...<br>";
     $inactive_user = $this->load();
     if(DEBUG) echo "get_inactive(): xml loaded<br>";
     if ($inactive_user->usergroups->inactive == 0)
     {
-      if ($inactive_user->usergroups->{'self-ban'} == self::max_gid() + 1)
-      {
-        $inactive_user->usergroups->inactive = self::max_gid() + 2;
-      }
-      else
-      {
-        $inactive_user->usergroups->inactive = self::max_gid() + 1;
-      }
+      $inactive_user->usergroups->inactive = self::max_gid() + 1;
       $inactive_user->saveXML(self::INACTIVE_USER_XML);
     }
     return $inactive_user->usergroups->inactive;
   }
   
+  /**
+   * Inactive gid mutator. Calculates it if it's not provided.
+   *
+   * @param integer Inactive usergroup gid.
+   */
   public function set_inactive($inactive=0)
   {
     $inactive_user = $this->load();
@@ -92,15 +125,7 @@ XMLCONTENT;
     {
       if ($inactive_user->usergroups->inactive == 0)
       {
-        if ($inactive_user->usergroups->{'self-ban'} == self::max_gid() + 1)
-        {
-          $inactive_user->usergroups->inactive = self::max_gid() + 2;
-        }
-        else
-        {
-          $inactive_user->usergroups->inactive = self::max_gid() + 1;
-        }
-        $inactive_user->saveXML(self::INACTIVE_USER_XML);
+        $inactive_user->usergroups->inactive = self::max_gid() + 1;
       }
     }
     else
@@ -110,50 +135,43 @@ XMLCONTENT;
     $inactive_user->saveXML(self::INACTIVE_USER_XML);
   }
   
+  /**
+   * Self ban usergroup gid accessor. Calculates it if it hasn't.
+   *
+   * @returns integer Self ban usergroup gid
+   */
   public function get_self_ban()
   {
     $inactive_user = $this->load();
     if ($inactive_user->usergroups->{'self-ban'} == 0)
     {
-      if ($inactive_user->usergroups->inactive == self::max_gid() + 1)
-      {
-        $inactive_user->usergroups->{'self-ban'} = self::max_gid() + 2;
-      }
-      else
-      {
-        $inactive_user->usergroups->{'self-ban'} = self::max_gid() + 1;
-      }
+      $inactive_user->usergroups->{'self-ban'} = self::max_gid() + 1;
       $inactive_user->saveXML(self::INACTIVE_USER_XML);
     }
     return $inactive_user->usergroups->{'self-ban'};
   }
   
+  /**
+   * Self ban gid mutator. Calculates it if it's not provided.
+   *
+   * @param integer Self ban usergroup gid.
+   */
   public function set_self_ban($self_ban=0)
   {
     $inactive_user = $this->load();
     if ($self_ban == 0)
     {
-      if ($inactive_user->usergroups->{'self-ban'} == 0)
-      {
-        if ($inactive_user->usergroups->inactive == self::max_gid() + 1)
-        {
-          $inactive_user->usergroups->{'self-ban'} = self::max_gid() + 2;
-        }
-        else
-        {
-          $inactive_user->usergroups->{'self-ban'} = self::max_gid() + 1;
-        }
-        $inactive_user->saveXML(self::INACTIVE_USER_XML);
-      }
+      $inactive_user->usergroups->{'self-ban'} = self::max_gid() + 1;
     }
     else
     {
       $inactive_user->usergroups->{'self-ban'} = $self_ban;
     }
+    $inactive_user->saveXML(self::INACTIVE_USER_XML);
   }
   
   /**
-   * Sets the inactive usergroup id to zero.
+   * Sets the inactive usergroup gid to zero.
    */
   public function reset_inactive()
   {
@@ -163,7 +181,7 @@ XMLCONTENT;
   }
   
   /**
-   * Sets the self ban usergroup id to zero.
+   * Sets the self ban usergroup gid to zero.
    */
   public function reset_self_ban()
   {
@@ -172,9 +190,15 @@ XMLCONTENT;
     $inactive_user->saveXML(self::INACTIVE_USER_XML);
   }
   
-  // add/delete usergroups from the database
-  // consider tagging the inactive usergroups with a span tag with a data- attribute
+  //TODO: add/delete usergroups from the database
+  // consider tagging the inactive usergroups with a span tag having 
+  // a data- attribute
   // <span data-inactive-user-group="inactive">usergroup description</span>
+  /**
+   * Retrieves the highest gid number from the database.
+   *
+   * @returns integer Highest gid present in the usergroups table.
+   */
   public static function max_gid ()
   {
     global $db;
@@ -299,7 +323,7 @@ XMLCONTENT;
       "canuseipsearch" => 0
       );
       
-      // add the usergroups to the usergroups table
+      // add the usergroup to the usergroups table
       if(DEBUG) echo "add_inactive(): inserting inactive_usergroup<br>";
       $db->insert_query("usergroups", $inact_usergroups);
       // update the cache
@@ -314,11 +338,9 @@ XMLCONTENT;
   {
     global $db, $cache;
     
-    //Create the "inactive" usergroup. Do nothing if it already exists.
-    //if the inactive usergroup does not exist... 
-    //append the inactive and self-banned usergroups to the database.
+    //Create the "self-ban" usergroup. Do nothing if it already exists.
+    //if it usergroup does not exist, append it to the database.
 
-    // $inactive_usergroups = $this->load();
     //TODO: Look for trimming the following array for simplification.
     // Most of those fields are holding the default value defined 
     // in the usergroups table. 
@@ -437,6 +459,9 @@ XMLCONTENT;
     $this->reset_inactive();
   }
   
+  /**
+   * Deletes the Seld ban usergroup added to the usergroups table.
+   */
   public function delete_self_ban ()
   {
     global $db, $cache;
@@ -449,11 +474,17 @@ XMLCONTENT;
   // create a group retriever for orphaned inactive usergroups
   // method to query for tagged usergroups
   // implement such a method with iterator
+  /**
+   * NOT YET IMPLEMENTED
+   */
   public function search_usergroups ()
   {
     return "function:search_usergroups not implemented<br>";
   }
   
+  /**
+   * NOT YET IMPLEMENTED
+   */
   public function next_usergroup ()
   {
     return "function:next_usergroup not implemented<br>";
@@ -478,5 +509,6 @@ XMLCONTENT;
   }
 }
 if(DEBUG) echo "userGroups class created<br>";
+//TODO: There is no need for this global variable. Change to local.
 global $inactive_usergroups;
 $inactive_usergroups = new userGroups();

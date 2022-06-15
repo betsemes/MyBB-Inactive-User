@@ -34,16 +34,12 @@ require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveusersettings_class.p
 require_once MYBB_ROOT . "inc/plugins/inactive_user/inactiveuser_class.php";
 require_once MYBB_ROOT . "inc/plugins/inactive_user/usergroups_class.php";
 
-// It should be the place where the user has been successfully logged in.
-// The right hook is datahandler_login_complete_end as per this post: https://community.mybb.com/thread-235652-post-1377346.html#pid1377346
-// This post: https://community.mybb.com/thread-170142-post-1155681.html#pid1155681 has useful information.
 $plugins->add_hook('datahandler_login_complete_end', 'user_reactivate');
 
-// TODO: tag all the mybb-plugin interface functions as @/internal
 /**
- * Information about the plugin provided to MyBB.
+ * Returns the information about the plugin that MyBB expects.
  *
- * @internal
+ * @internal Called by MyBB.
  */
 function inactive_user_info()
 {
@@ -53,16 +49,16 @@ function inactive_user_info()
 		"website"       => "/index.html",
 		"author"        => "Betsemes",
 		"authorsite"    => "mailto:betsemes@gmail.com",
-		"version"       => "0.1.0-alpha",
+		"version"       => "0.1.1-alpha.1",
 		"codename"      => "inactive_user",
 		"compatibility" => "1830"
 	);
 }
 
 /**
- * Creates the settings and inactive users tables.
+ * Installs the plugin. Creates the settings, and the inactive users table.
  *
- * @internal
+ * @internal Called by MyBB.
  */
 function inactive_user_install()
 {
@@ -85,7 +81,7 @@ function inactive_user_install()
 }
 
 /**
- * Returns true if the inactive users table exists, false otherwise.
+ * Returns true if the settings exists, false otherwise.
  *
  * @internal
  */
@@ -103,9 +99,9 @@ function inactive_user_is_installed()
 }
 
 /**
- * Deletes the inactive usergroups. Drops the tables.
+ * Deletes the inactive usergroups and settings. Drops the tables.
  *
- * @internal
+ * @internal Called by MyBB.
  */
 function inactive_user_uninstall()
 {
@@ -140,7 +136,7 @@ function inactive_user_uninstall()
  * Assigns the inactive usergroup to users in the inactive users table.
  * Enables the task.
  *
- * @internal
+ * @internal Called by MyBB.
  */
 function inactive_user_activate()
 {
@@ -184,7 +180,7 @@ function inactive_user_activate()
 /**
  * Deletes the task and restores usergroups
  *
- * @internal
+ * @internal Called by MyBB.
  */
 function inactive_user_deactivate()
 {
@@ -220,7 +216,7 @@ function inactive_user_deactivate()
  * functions intended for activating/deactivating
  * the plugin itself.
  *
- * @param $handler Data handler provided by the runhooks function.
+ * @param $handler Data handler provided by the runhooks MyBB function.
  * @internal Called by MyBB.
  */
 function user_reactivate($handler)

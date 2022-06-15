@@ -17,7 +17,7 @@ if(!defined("IN_MYBB"))
 }
 
 /**
- * Creates and accesses the inactive users table, the inactive usergroups,
+ * Creates and accesses the inactive users data, the inactive usergroups,
  * and provides a user API.
  */
 class inactiveUsers {
@@ -30,6 +30,7 @@ class inactiveUsers {
    */
   public function __construct($iu_settings) 
   {
+    //TODO: Eliminate the parameter. Create a local variable instead.
     global $db, $cache, $PL, $inactive_usergroups;
     $PL or require_once IUIUPLUGINLIBRARY;
     $inactive_usergroups or require_once MYBB_ROOT ."inc/plugins/inactive_user/usergroups_class.php";
@@ -73,226 +74,18 @@ class inactiveUsers {
 
        
     // if the usergroups are still not created, create them.
-    // if(DEBUG) echo "$inactive_usergroups->inactive: ". $inactive_usergroups->inactive ."<br>";
+    if(DEBUG) echo "$inactive_usergroups->inactive: ". $inactive_usergroups->get_inactive() ."<br>";
+    if(DEBUG) echo "$inactive_usergroups->self_ban: ". $inactive_usergroups->get_self_ban() ."<br>";
     $inactive_usergroups->add_inactive();
     $inactive_usergroups->add_self_ban();
-/*    if ($inactive_usergroups->get_inactive() == 0)
-    {
-      // if(DEBUG) echo "Get the highest gid number within the usergroups table<br>";
-      $max_gid = $inactive_usergroups->max_gid();
-      
-      $inactive_usergroups->set_inactive($max_gid + 1);
-      $inactive_usergroups->set_self_ban($max_gid + 2);
-      
-      //Create the "inactive" usergroup. Do nothing if it already exists.
-      //if the inactive usergroup does not exist... 
-      //append the inactive and self-banned usergroups to the database.
-
-      //TODO: Look for trimming the following array for simplification.
-      // Most of those fields are holding the default value defined 
-      // in the usergroups table. 
-      $inact_usergroups = array(
-        array(
-          "gid" => $inactive_usergroups->get_inactive(),
-          "type" => 2,
-          "title" => "Inactive User",
-          "description" => "Users who have not being seen in more than " .$iu_settings->get("inactivityinterval"). " days.",
-          "namestyle" => '<span style="color:#8c8c8c;">{username}</span>',
-          "usertitle" => "Inactive",
-          "stars" => 0,
-          "starimage" => "images/star.png",
-          "image" => "",
-          "disporder" => 0,
-          "isbannedgroup" => 0,
-          "canview" => 0,
-          "canviewthreads" => 0,
-          "canviewprofiles" => 0,
-          "candlattachments" => 0,
-          "canviewboardclosed" => 0,
-          "canpostthreads" => 0,
-          "canpostreplys" => 0,
-          "canpostattachments" => 0,
-          "canratethreads" => 0,
-          "modposts" => 0,
-          "modthreads" => 0,
-          "mod_edit_posts" => 0,
-          "modattachments" => 0,
-          "caneditposts" => 0,
-          "candeleteposts" => 0,
-          "candeletethreads" => 0,
-          "caneditattachments" => 0,
-          "canviewdeletionnotice" => 0,
-          "canpostpolls" => 0,
-          "canvotepolls" => 0,
-          "canundovotes" => 0,
-          "canusepms" => 0,
-          "cansendpms" => 0,
-          "cantrackpms" => 0,
-          "candenypmreceipts" => 0,
-          "pmquota" => 0,
-          "maxpmrecipients" => 0,
-          "cansendemail" => 0,
-          "cansendemailoverride" => 0,
-          "maxemails" => 1,
-          "emailfloodtime" => 1,
-          "canviewmemberlist" => 0,
-          "canviewcalendar" => 0,
-          "canaddevents" => 0,
-          "canbypasseventmod" => 0,
-          "canmoderateevents" => 0,
-          "canviewonline" => 0,
-          "canviewwolinvis" => 0,
-          "canviewonlineips" => 0,
-          "cancp" => 0,
-          "issupermod" => 0,
-          "cansearch" => 0,
-          "canusercp" => 0,
-          "canbeinvisible" => 1,
-          "canuploadavatars" => 0,
-          "canratemembers" => 0,
-          "canchangename" => 0,
-          "canbereported" => 0,
-          "canchangewebsite" => 0,
-          "showforumteam" => 0,
-          "usereputationsystem" => 0,
-          "cangivereputations" => 0,
-          "candeletereputations" => 0,
-          "reputationpower" => 0,
-          "maxreputationsday" => 0,
-          "maxreputationsperuser" => 0,
-          "maxreputationsperthread" => 0,
-          "candisplaygroup" => 0,
-          "attachquota" => 0,
-          "cancustomtitle" => 0,
-          "canwarnusers" => 0,
-          "canreceivewarnings" => 0,
-          "maxwarningsday" => 0,
-          "canmodcp" => 0,
-          "showinbirthdaylist" => 0,
-          "canoverridepm" => 0,
-          "canusesig" => 0,
-          "canusesigxposts" => 0,
-          "signofollow" => 0,
-          "edittimelimit" => 0,
-          "maxposts" => 0,
-          "showmemberlist" => 0,
-          "canmanageannounce" => 0,
-          "canmanagemodqueue" => 0,
-          "canmanagereportedcontent" => 0,
-          "canviewmodlogs" => 0,
-          "caneditprofiles" => 0,
-          "canbanusers" => 0,
-          "canviewwarnlogs" => 0,
-          "canuseipsearch" => 0
-        ), array(
-          "gid" => $inactive_usergroups->get_self_ban(),
-          "type" => 2,
-          "title" => "Self-Banned User",
-          "description" => "Users who have banned themselves in the process of deactivating.",
-          "namestyle" => '<span style="color:#8c8c8c; text-decoration-line: line-through;">{username}</span>',
-          "usertitle" => "Inactive",
-          "stars" => 0,
-          "starimage" => "images/star.png",
-          "image" => "",
-          "disporder" => 0,
-          "isbannedgroup" => 1,
-          "canview" => 0,
-          "canviewthreads" => 0,
-          "canviewprofiles" => 0,
-          "candlattachments" => 0,
-          "canviewboardclosed" => 0,
-          "canpostthreads" => 0,
-          "canpostreplys" => 0,
-          "canpostattachments" => 0,
-          "canratethreads" => 0,
-          "modposts" => 0,
-          "modthreads" => 0,
-          "mod_edit_posts" => 0,
-          "modattachments" => 0,
-          "caneditposts" => 0,
-          "candeleteposts" => 0,
-          "candeletethreads" => 0,
-          "caneditattachments" => 0,
-          "canviewdeletionnotice" => 0,
-          "canpostpolls" => 0,
-          "canvotepolls" => 0,
-          "canundovotes" => 0,
-          "canusepms" => 0,
-          "cansendpms" => 0,
-          "cantrackpms" => 0,
-          "candenypmreceipts" => 0,
-          "pmquota" => 0,
-          "maxpmrecipients" => 0,
-          "cansendemail" => 0,
-          "cansendemailoverride" => 0,
-          "maxemails" => 1,
-          "emailfloodtime" => 1,
-          "canviewmemberlist" => 0,
-          "canviewcalendar" => 0,
-          "canaddevents" => 0,
-          "canbypasseventmod" => 0,
-          "canmoderateevents" => 0,
-          "canviewonline" => 0,
-          "canviewwolinvis" => 0,
-          "canviewonlineips" => 0,
-          "cancp" => 0,
-          "issupermod" => 0,
-          "cansearch" => 0,
-          "canusercp" => 0,
-          "canbeinvisible" => 1,
-          "canuploadavatars" => 0,
-          "canratemembers" => 0,
-          "canchangename" => 0,
-          "canbereported" => 0,
-          "canchangewebsite" => 0,
-          "showforumteam" => 0,
-          "usereputationsystem" => 0,
-          "cangivereputations" => 0,
-          "candeletereputations" => 0,
-          "reputationpower" => 0,
-          "maxreputationsday" => 0,
-          "maxreputationsperuser" => 0,
-          "maxreputationsperthread" => 0,
-          "candisplaygroup" => 0,
-          "attachquota" => 0,
-          "cancustomtitle" => 0,
-          "canwarnusers" => 0,
-          "canreceivewarnings" => 0,
-          "maxwarningsday" => 0,
-          "canmodcp" => 0,
-          "showinbirthdaylist" => 0,
-          "canoverridepm" => 0,
-          "canusesig" => 0,
-          "canusesigxposts" => 0,
-          "signofollow" => 0,
-          "edittimelimit" => 0,
-          "maxposts" => 0,
-          "showmemberlist" => 0,
-          "canmanageannounce" => 0,
-          "canmanagemodqueue" => 0,
-          "canmanagereportedcontent" => 0,
-          "canviewmodlogs" => 0,
-          "caneditprofiles" => 0,
-          "canbanusers" => 0,
-          "canviewwarnlogs" => 0,
-          "canuseipsearch" => 0
-        )
-      );
-      
-      // add the usergroups to the usergroups table
-      // if(DEBUG) echo "inserting inactive_usergroups<br>";
-      $db->insert_query_multiple("usergroups", $inact_usergroups);
-      // update the cache
-      // if(DEBUG) echo "updating the cache<br>";
-      $cache->update_usergroups();
-    }
-*/      
 
   }
   
+  //TODO: copy the code in inactive_user/inactive_user_ident.php here 
+  // to replace the require_once. Delete inactive_user/inactive_user_ident.php
   /**
-   * TODO: copy the code in inactive_user/inactive_user_ident.php here 
-   * to replace the require_once. Delete inactive_user/inactive_user_ident.php
+   * Identifies the users who have not visited for the configured 
+   * amount of days.
    */
   public function identify($iu_settings) 
   {
@@ -304,8 +97,8 @@ class inactiveUsers {
   /**
    * Returns whether or not the specified user is inactive.
    *
-   * Public API service function. Returns true if the specified user has not visited
-   * for the days amount configured into the settings.
+   * Public API service function. Returns true if the specified user 
+   * has not visited for the days amount configured into the settings.
    *
    * @param $user The username or user id.
    * @return boolean **TRUE**: the user specified in the parameter is inactive.
@@ -329,8 +122,8 @@ class inactiveUsers {
   /**
    * Returns whether or not the specified user is active.
    *
-   * Public API service function. Returns true if the specified user has visited
-   * within the period of days configured into the settings.
+   * Public API service function. Returns true if the specified user 
+   * has visited within the period of days configured into the settings.
    *
    * @param $user The username or user id.
    * @return boolean **TRUE**: the user specified in the parameter is active.
@@ -352,24 +145,41 @@ class inactiveUsers {
  * Add serviceable accessors and mutators for retrieving specific
  * settings for the public API.
  * In order to do this successfully, the general inactiveUserSettings 
- * getter and setter should be up to date.
- * get_inactivity_interval
- * get_deletion_time
- * get_reminders
- * get_reminder_spacing
- * get_include_nonverified_accounts
- * get_include_away_users
- * get_keep_tables
- * set_inactivity_interval
- * set_deletion_time
- * set_reminders
- * set_reminder_spacing
- * set_include_nonverified_accounts
- * set_include_away_users
- * set_keep_tables
+ * accessor and mutator should be up to date.
+ * reactivate_user()
+ * deactivate_user()
+ * delete_inactive_user()
+ * get_deactdate()
+ * get_deactmethod()
+ * get_oldgroup()
+ * get_olddisplaygroup()
+ * get_oldadditionalgroups()
+ * get_usertitle()
+ * get_returndate()
+ * set_deactdate()
+ * set_deactmethod()
+ * set_oldgroup()
+ * set_olddisplaygroup()
+ * set_oldadditionalgroups()
+ * set_usertitle()
+ * set_returndate()
+ * get_inactivity_interval()
+ * get_deletion_time()
+ * get_reminders()
+ * get_reminder_spacing()
+ * get_include_nonverified_accounts()
+ * get_include_away_users()
+ * get_keep_tables()
+ * set_inactivity_interval()
+ * set_deletion_time()
+ * set_reminders()
+ * set_reminder_spacing()
+ * set_include_nonverified_accounts()
+ * set_include_away_users()
+ * set_keep_tables()
  * Add serviceable accessors and mutators for retrieving specific data 
  * inactive users for the public API.
  * 
  */
- 
+
 }
